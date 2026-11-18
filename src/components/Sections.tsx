@@ -1,12 +1,281 @@
-import Image from 'next/image';
-import Link from 'next/link';
-import {profile,leadership,Project} from '@/content/portfolio';
-import {InteractiveName,CopyEmail,HeroField} from './Interactions';
-export function Hero(){return <section className="hero" aria-label="Introduction"><HeroField/><div className="hero-top mono"><span>SOFTWARE ENGINEER / PRODUCT BUILDER</span><span>PUNE, INDIA</span></div><InteractiveName/><p className="hero-subtitle">Software Engineer building products where <em>thoughtful architecture</em> and exceptional user experiences meet.</p><div className="hero-bottom"><div className="hero-specialties mono"><span>FULL-STACK PRODUCTS</span><span>FRONTEND ENGINEERING</span><span>BACKEND & APIs</span></div><div className="hero-actions"><a href={profile.resume} className="hero-resume" target="_blank" rel="noopener noreferrer">View Resume <span>↗</span></a><a href="#contact" className="hero-contact">Contact Me <span>↗</span></a></div></div><div className="hero-social mono"><a href={profile.github}>GITHUB</a><a href={profile.linkedin}>LINKEDIN</a><a href={`mailto:${profile.email}`}>EMAIL</a></div><div className="hero-foot mono"><span>CO-FOUNDER & CTO / NIOLEARN</span><a href="#work">SCROLL TO EXPLORE ↓</a></div></section>}
-export function ScrollBox(){return <section className="scroll-stage" aria-label="From engineering to selected work"><div className="stage-heading mono">01 / FROM THOUGHT TO FORM</div><div className="scroll-object"><div className="object-top mono"><span>ARCHITECTURE → EXPERIENCE</span><span>01—05</span></div><div className="object-title">Think in systems.<br/><em>Build for people.</em></div><div className="rectangle-resolve" aria-hidden="true"><span>IDEAS</span><em>made useful.</em></div><div className="system-map" aria-hidden="true"><i/><i/><i/></div><div className="object-foot mono"><span>FORM / FUNCTION / FEEDBACK</span><span>ABHIRAJ JAIN</span></div></div><p className="stage-note mono">FIVE PROJECTS. REAL ENGINEERING DECISIONS.<br/>SELECTED WORK ↓</p></section>}
-export function Expertise(){const areas=[['Full-Stack Product Engineering','Building frontend and backend experiences as one coherent product, from interfaces to authentication and data.','NIOLEARN / INSTALEAD'],['Frontend Engineering','React, Next.js and TypeScript interfaces with responsive layouts, accessible components and deliberate interaction.','RESPONSIVE / ACCESSIBLE / INTERACTIVE'],['Backend & API Engineering','Authentication flows, REST APIs, serverless workflows and signed payment webhooks connected to working applications.','AUTH / APIS / WEBHOOKS'],['Product Architecture','Data models, modular application structure, permissions and reliable workflows shaped around the product.','DATA / PERMISSIONS / WORKFLOWS'],['Performance & Reliability','Automated checks, rendering performance, error states and integration testing, with clear boundaries around what has been verified.','TEST / MEASURE / ITERATE']];return <section id="expertise" className="expertise section"><div className="section-top mono"><span>02 / ENGINEERING EXPERTISE</span><span>FROM INTERFACE TO INFRASTRUCTURE</span></div><div className="expertise-heading" data-reveal><h2>Complex systems.<br/><em>Clear experiences.</em></h2><p>I build across the product, paying attention to how the pieces work together, not only how they look in isolation.</p></div><div className="expertise-rows">{areas.map(([title,description,detail],i)=><article className="expertise-row" key={title} data-reveal><span className="mono">0{i+1}</span><h3>{title}</h3><div><p>{description}</p><span className="mono">{detail}</span></div></article>)}</div></section>}
-export function ProjectVisual({project}:{project:Project}){if(project.image)return <figure className="project-media"><Image src={project.image} alt={`${project.name} live project homepage, captured November 2026`} width={1440} height={project.slug==='niolearn'?900:1000} sizes="(max-width: 768px) 100vw, 85vw"/><figcaption className="media-label mono">LIVE PROJECT CAPTURE / NOVEMBER 2026</figcaption></figure>;return <div className={`project-media project-graphic graphic-${project.slug}`} aria-label={`${project.name} editorial project graphic, not a product screenshot`}><span className="mono graphic-top">PRODUCT & ENGINEERING</span><span className="graphic-word">{project.name}</span><div className="graphic-lines" aria-hidden="true"><i/><i/><i/><i/></div><div className="graphic-bottom mono"><span>{project.kind}</span><span>{project.status}</span></div></div>}
-export function About(){return <section id="about" className="about section"><div className="section-top mono"><span>02 / THE PERSON BEHIND THE WORK</span><span>PUNE, INDIA</span></div><div className="about-grid"><div className="about-editorial" aria-hidden="true" data-reveal><span className="mono">THINK IN SYSTEMS.</span><span className="editorial-monogram">AJ<span>.</span></span><span className="mono">BUILD FOR PEOPLE.</span></div><div className="about-copy" data-reveal><h2>Engineer by practice.<br/><em>Builder by instinct.</em></h2><p>I&apos;m Abhiraj, a computer science student and software engineer based in Pune. I work across frontend, backend, and product engineering, moving useful ideas from prototypes to real applications.</p><p>As Co-Founder and CTO of NioLearn, I lead product and technical development. My work includes assessments, authentication, payment verification, and the details that make a product usable.</p><div className="education"><span className="mono">EDUCATION / 2025–2029</span><h3>Vedam School of Technology</h3><p>Ajeenkya DY Patil University<br/>B.Tech Computer Science · AI & ML<br/>CGPA 8.95 / 10</p></div></div></div></section>}
-export function Experience(){return <section id="experience" className="section experience"><div className="section-top mono"><span>03 / EXPERIENCE & TOOLKIT</span><span>BUILD. TEST. ITERATE.</span></div><h2 className="section-title" data-reveal>Product thinking.<br/><em>Engineering depth.</em></h2><article className="experience-row" data-reveal><span className="mono">2026–PRESENT</span><div><h3>NioLearn <span>↗</span></h3><p className="experience-role">Co-Founder & CTO<br/>Head of Product & Technology</p></div><div className="experience-copy"><p>Leading product and engineering for a live tech admissions platform, from student assessments to checkout.</p><ul><li>Timed assessments, autosave, and server-side scoring.</li><li>Razorpay order creation, verification, and signed webhooks.</li><li>Supabase session refresh and automated authentication tests.</li></ul><Link href="/projects/niolearn" className="text-link">Read the engineering story ↗</Link></div></article></section>}
-export function Leadership(){return <section className="section leadership"><div className="section-top mono"><span>04 / BEYOND THE CODE</span><span>PEOPLE & PRACTICE</span></div><div className="leadership-grid"><div><h2 className="small-title">Good work<br/>is a <em>team sport.</em></h2><p className="muted">Planning, budgeting, and showing up when it counts.</p></div><div>{leadership.map(([date,name,role])=><div className="lead-row" key={name}><span className="mono">{date}</span><h3>{name}</h3><p>{role}</p></div>)}</div></div><div className="achievements"><div><strong>150+</strong><p>LeetCode problems solved<br/>with Java and Python</p></div><div><strong>24<em>h</em></strong><p>Vedam hackathon<br/>Organizer & frontend participant</p></div><div><strong>91.56</strong><p>JEE percentile</p></div></div><p className="workshop mono">ALSO / COMPLETED THE BE10X AI TOOLS WORKSHOP</p></section>}
-export function Contact(){return <footer id="contact" className="contact section"><div className="section-top mono"><span>05 / YOUR NEXT IDEA STARTS HERE</span><span><i className="status-dot"/> LET&apos;S TALK</span></div><h2 data-reveal>LET&apos;S BUILD<br/>SOMETHING<br/><em>REAL.</em><span className="contact-arrow" aria-hidden="true">↗</span></h2><div className="contact-bottom"><p>Open to software engineering opportunities,<br/>interesting products, and meaningful collaborations.</p><div><a className="email-link" href={`mailto:${profile.email}`}>{profile.email} ↗</a><CopyEmail email={profile.email}/></div></div><div className="footer-bottom mono"><span>© 2026 ABHIRAJ JAIN</span><div><a href={profile.github}>GITHUB ↗</a><a href={profile.linkedin}>LINKEDIN ↗</a><a href={profile.resume} target="_blank" rel="noopener noreferrer">RÉSUMÉ ↗</a></div><a href="#top">BACK TO TOP ↑</a></div></footer>}
+import Image from "next/image";
+import Link from "next/link";
+import { profile, Project } from "@/content/portfolio";
+import { CopyEmail, HeroField } from "./Interactions";
+import { ScrambleName, WordReveal } from "./Motion";
+
+export function Hero() {
+  return (
+    <section className="hero" aria-label="Introduction">
+      <HeroField />
+      <div className="hero-top mono">
+        <span>SOFTWARE ENGINEER / PRODUCT BUILDER</span>
+        <span>PUNE, INDIA</span>
+      </div>
+      <ScrambleName />
+      <p className="hero-subtitle">
+        Software Engineer building products where{" "}
+        <em>thoughtful architecture</em> and exceptional user experiences meet.
+      </p>
+      <div className="hero-bottom">
+        <div className="hero-specialties mono">
+          <span>FULL-STACK PRODUCTS</span>
+          <span>FRONTEND ENGINEERING</span>
+          <span>BACKEND & APIs</span>
+        </div>
+        <div className="hero-actions">
+          <a
+            href={profile.resume}
+            className="hero-resume"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            View Resume <span>↗</span>
+          </a>
+          <a href="#contact" className="hero-contact">
+            Contact Me <span>↗</span>
+          </a>
+        </div>
+      </div>
+      <div className="hero-social mono">
+        <a href={profile.github}>GITHUB</a>
+        <a href={profile.linkedin}>LINKEDIN</a>
+        <a href={`mailto:${profile.email}`}>EMAIL</a>
+      </div>
+      <div className="hero-foot mono">
+        <span>CO-FOUNDER & CTO / NIOLEARN</span>
+        <a href="#work">SCROLL TO EXPLORE ↓</a>
+      </div>
+    </section>
+  );
+}
+
+const WHOAMI_PARAGRAPHS = [
+  "I'm Abhiraj Jain, a Software Engineer and Co-Founder & CTO of NioLearn, based in Pune. I study B.Tech Computer Science with AI & ML at Vedam School of Technology, Ajeenkya DY Patil University.",
+  "My work runs across the product: frontend interfaces, backend APIs, authentication flows, payment verification, and the product decisions that tie them together. At NioLearn I lead product and technical development, from timed assessments to a verified Razorpay checkout.",
+  "I care about software that holds up in real use: measured performance, automated tests, accessible interfaces, and honest engineering over decoration.",
+];
+
+export function WhoAmI() {
+  return (
+    <section id="about" className="about section whoami">
+      <div className="section-top mono">
+        <span>01 / THE PERSON BEHIND THE WORK</span>
+        <span>PUNE, INDIA</span>
+      </div>
+      <h2 className="reference-heading">
+        WHO <em>am</em> I?
+      </h2>
+      <span className="mint-rule" />
+      <p className="whoami-intro">
+        Engineer by practice. Builder by instinct.
+      </p>
+      <div className="whoami-grid">
+        <div className="whoami-visual" aria-hidden="true">
+          <svg viewBox="0 0 400 400" role="presentation">
+            <defs>
+              <linearGradient id="wv-line" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stopColor="#35d4a0" stopOpacity="0.9" />
+                <stop offset="1" stopColor="#b9f46b" stopOpacity="0.35" />
+              </linearGradient>
+            </defs>
+            <rect
+              x="60"
+              y="60"
+              width="280"
+              height="280"
+              fill="none"
+              stroke="#26302b"
+              strokeWidth="1"
+            />
+            <rect
+              x="110"
+              y="110"
+              width="180"
+              height="180"
+              fill="none"
+              stroke="url(#wv-line)"
+              strokeWidth="1.2"
+              transform="rotate(12 200 200)"
+            />
+            <circle
+              cx="200"
+              cy="200"
+              r="58"
+              fill="none"
+              stroke="#35d4a0"
+              strokeOpacity="0.55"
+              strokeWidth="1"
+            />
+            <circle cx="200" cy="200" r="4" fill="#b9f46b" />
+            <line
+              x1="200"
+              y1="20"
+              x2="200"
+              y2="60"
+              stroke="#26302b"
+              strokeWidth="1"
+            />
+            <line
+              x1="200"
+              y1="340"
+              x2="200"
+              y2="380"
+              stroke="#26302b"
+              strokeWidth="1"
+            />
+            <line
+              x1="20"
+              y1="200"
+              x2="60"
+              y2="200"
+              stroke="#26302b"
+              strokeWidth="1"
+            />
+            <line
+              x1="340"
+              y1="200"
+              x2="380"
+              y2="200"
+              stroke="#26302b"
+              strokeWidth="1"
+            />
+          </svg>
+          <span className="mono whoami-visual-label">
+            SYSTEMS / STRUCTURE / PEOPLE
+          </span>
+        </div>
+        <WordReveal paragraphs={WHOAMI_PARAGRAPHS} />
+      </div>
+    </section>
+  );
+}
+
+export function ProjectVisual({ project }: { project: Project }) {
+  if (project.image)
+    return (
+      <figure className="project-media">
+        <Image
+          src={project.image}
+          alt={`${project.name} live project homepage, captured November 2026`}
+          width={1440}
+          height={project.slug === "niolearn" ? 900 : 1000}
+          sizes="(max-width: 768px) 100vw, 85vw"
+        />
+        <figcaption className="media-label mono">
+          LIVE PROJECT CAPTURE / NOVEMBER 2026
+        </figcaption>
+      </figure>
+    );
+  return (
+    <div
+      className={`project-media project-graphic graphic-${project.slug}`}
+      aria-label={`${project.name} editorial project graphic, not a product screenshot`}
+    >
+      <span className="mono graphic-top">PRODUCT & ENGINEERING</span>
+      <span className="graphic-word">{project.name}</span>
+      <div className="graphic-lines" aria-hidden="true">
+        <i />
+        <i />
+        <i />
+        <i />
+      </div>
+      <div className="graphic-bottom mono">
+        <span>{project.kind}</span>
+        <span>{project.status}</span>
+      </div>
+    </div>
+  );
+}
+
+export function Experience() {
+  return (
+    <section id="experience" className="section experience">
+      <div className="section-top mono">
+        <span>06 / EXPERIENCE</span>
+        <span>BUILD. TEST. ITERATE.</span>
+      </div>
+      <h2 className="section-title" data-reveal>
+        Product thinking.
+        <br />
+        <em>Engineering depth.</em>
+      </h2>
+      <article className="experience-row" data-reveal>
+        <span className="mono">2026–PRESENT</span>
+        <div>
+          <h3>
+            NioLearn <span>↗</span>
+          </h3>
+          <p className="experience-role">
+            Co-Founder & CTO
+            <br />
+            Head of Product & Technology
+          </p>
+        </div>
+        <div className="experience-copy">
+          <p>
+            Leading product and engineering for a live tech admissions platform,
+            from student assessments to checkout.
+          </p>
+          <ul>
+            <li>Timed assessments, autosave, and server-side scoring.</li>
+            <li>Razorpay order creation, verification, and signed webhooks.</li>
+            <li>
+              Supabase session refresh and automated authentication tests.
+            </li>
+          </ul>
+          <Link href="/projects/niolearn" className="text-link">
+            Read the engineering story ↗
+          </Link>
+        </div>
+      </article>
+    </section>
+  );
+}
+
+export function Contact() {
+  return (
+    <footer id="contact" className="contact section">
+      <div className="section-top mono">
+        <span>07 / YOUR NEXT IDEA STARTS HERE</span>
+        <span>
+          <i className="status-dot" /> LET&apos;S TALK
+        </span>
+      </div>
+      <h2 data-reveal>
+        LET&apos;S BUILD
+        <br />
+        SOMETHING
+        <br />
+        <em>REAL.</em>
+        <span className="contact-arrow" aria-hidden="true">
+          ↗
+        </span>
+      </h2>
+      <div className="contact-bottom">
+        <p>
+          Open to software engineering opportunities,
+          <br />
+          interesting products, and meaningful collaborations.
+        </p>
+        <div>
+          <a className="email-link" href={`mailto:${profile.email}`}>
+            {profile.email} ↗
+          </a>
+          <CopyEmail email={profile.email} />
+        </div>
+      </div>
+      <div className="footer-bottom mono">
+        <span>© 2026 ABHIRAJ JAIN</span>
+        <div>
+          <a href={profile.github}>GITHUB ↗</a>
+          <a href={profile.linkedin}>LINKEDIN ↗</a>
+          <a href={profile.resume} target="_blank" rel="noopener noreferrer">
+            RÉSUMÉ ↗
+          </a>
+        </div>
+        <a href="#top">BACK TO TOP ↑</a>
+      </div>
+    </footer>
+  );
+}
