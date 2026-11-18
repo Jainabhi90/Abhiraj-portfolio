@@ -57,7 +57,13 @@ export function WorkList() {
               href={`/projects/${p.slug}`}
               className="work-row"
               onPointerEnter={(e) => {
-                if (e.pointerType !== "touch") setActive(i);
+                if (e.pointerType === "touch") return;
+                if (preview.current)
+                  gsap.set(preview.current, {
+                    x: Math.max(20, Math.min(innerWidth - 420, e.clientX - 200)),
+                    y: Math.max(20, Math.min(innerHeight - 300, e.clientY - 125)),
+                  });
+                setActive(i);
               }}
               onFocus={(e) => {
                 const r = e.currentTarget.getBoundingClientRect();
