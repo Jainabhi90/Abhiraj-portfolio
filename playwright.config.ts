@@ -1,0 +1,2 @@
+import {defineConfig} from '@playwright/test';
+export default defineConfig({testDir:'./tests',timeout:90000,workers:1,use:{browserName:'chromium',launchOptions:{executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE,args:['--no-sandbox']},headless:true},webServer:{command:'npm run start',url:'http://127.0.0.1:3000',reuseExistingServer:true},reporter:[['list'],['json',{outputFile:'test-results/results.json'}]]});
