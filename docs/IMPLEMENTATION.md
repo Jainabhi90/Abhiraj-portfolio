@@ -79,3 +79,7 @@ These are one local lab run, not deployed/field results or guarantees. INP was n
 5. After explicit production approval, merge to the verified production branch or promote the approved preview. Do not set a static HTML output directory for Next.js.
 6. Connect abhirajjain.me only with separate user approval and the exact DNS values Vercel supplies. Then update the canonical/site URL and verify HTTPS, redirects, sitemap and social preview.
 7. Rollback: restore the prior Vercel deployment and/or revert the merge. Original HTML and assets remain recoverable from main's original commit and `legacy/`.
+
+## Visual correction, November 19, 2026
+
+The first version's visual acceptance was rejected. See VISUAL-CORRECTION-PLAN.md for the replacement design, direct live-reference findings, tested interactions and open acceptance gates. This correction supersedes the acid-green/portrait/inline-project-card presentation. Do not infer current design acceptance from the first version's build or Lighthouse results. A corrected production build, typecheck, lint and four browser test groups pass locally. A Vercel preview and exact fidelity to the missing screenshot attachments remain pending.
