@@ -1,0 +1,6 @@
+# Full 72-image matrix is generated locally by the browser suite.
+*.png
+!chromium-1440-hero.png
+!chromium-1440-tech-stack.png
+!chromium-390-hero.png
+!webkit-390-work.png

@@ -1,3 +1,5 @@
+> Historical report. Superseded by [the November 19 audit](AUDIT-2026-11-19.md).
+
 # Visual correction plan - Portfolio 2.0
 
 Status: reference screenshots requested, not yet received. This plan is provisional where image-specific composition is required. Keep Next.js architecture, source-grounded content, case-study routes, and branch-only deployment boundary.

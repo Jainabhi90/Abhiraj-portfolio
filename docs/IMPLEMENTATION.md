@@ -1,3 +1,5 @@
+> Historical report. Superseded by [the November 19 audit](AUDIT-2026-11-19.md).
+
 # Portfolio 2.0 - Implementation and review report
 
 ## Changes

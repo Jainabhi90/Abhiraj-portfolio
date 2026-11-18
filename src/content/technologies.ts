@@ -81,7 +81,7 @@ export const techGroups = [
     ]
   },
   {
-    "name": "AI, Testing & Tools",
+    "name": "Languages & Tools",
     "items": [
       {
         "name": "Java",
