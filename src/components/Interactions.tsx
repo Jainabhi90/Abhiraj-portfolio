@@ -14,7 +14,7 @@ export function MotionSystem(){
  const ctx=gsap.context(()=>{
   gsap.utils.toArray<HTMLElement>('[data-reveal]').forEach(el=>gsap.from(el,{y:28,opacity:0,duration:.8,ease:'power2.out',scrollTrigger:{trigger:el,start:'top 94%',once:true}}));
   const box=document.querySelector('.scroll-object'); const stage=document.querySelector('.scroll-stage');
-  if(box&&stage){const mm=gsap.matchMedia();mm.add('(min-width: 768px)',()=>{const timeline=gsap.timeline({scrollTrigger:{trigger:stage,start:'top 95%',end:'bottom 25%',scrub:.65,invalidateOnRefresh:true}});timeline.fromTo(box,{scale:.28,xPercent:38,yPercent:-8,rotation:-14,borderRadius:28},{scale:.58,xPercent:-17,yPercent:0,rotation:7,borderRadius:6,duration:1}).to(box,{scale:1,xPercent:0,rotation:0,borderRadius:0,duration:1.2}).to('.object-title',{y:-12,opacity:0,duration:.5},1.4).fromTo('.rectangle-resolve',{opacity:0,y:30},{opacity:1,y:0,duration:.7},1.6).to('.system-map',{opacity:0,y:20,duration:.5},1.6);});}
+  if(box&&stage){const mm=gsap.matchMedia();mm.add('(min-width: 768px)',()=>{const timeline=gsap.timeline({scrollTrigger:{trigger:stage,start:'top 95%',end:'center 45%',scrub:.65,invalidateOnRefresh:true}});timeline.fromTo(box,{scale:.28,xPercent:38,yPercent:-8,rotation:-14,borderRadius:28},{scale:.58,xPercent:-17,yPercent:0,rotation:7,borderRadius:6,duration:1}).to(box,{scale:1,xPercent:0,rotation:0,borderRadius:0,duration:1.2}).to('.object-title',{y:-12,opacity:0,duration:.3},1.15).fromTo('.rectangle-resolve',{opacity:0,y:30},{opacity:1,y:0,duration:.55},1.55).to('.system-map',{opacity:0,y:20,duration:.3},1.15);});}
 
  });
  return()=>{ctx.revert();gsap.ticker.remove(update);lenis.destroy();};
