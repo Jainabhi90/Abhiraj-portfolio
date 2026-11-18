@@ -1501,3 +1501,9 @@ body {
     top: 32px;
   }
 }
+
+/* Mobile stability: keep the off-canvas nav from widening the page (clip avoids creating a scroll container) */
+html,
+body {
+  overflow-x: clip;
+}
