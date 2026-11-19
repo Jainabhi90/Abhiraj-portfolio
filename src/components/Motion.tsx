@@ -281,7 +281,7 @@ export function WhatIDo() {
             trigger: pinEl,
             pin: true,
             start: "top top",
-            end: () => "+=" + Math.round(window.innerHeight * 2.3),
+            end: () => "+=" + Math.round(window.innerHeight * 1.8),
             scrub: 0.5,
             anticipatePin: 1,
             invalidateOnRefresh: true,
@@ -297,25 +297,36 @@ export function WhatIDo() {
             at,
           );
         }
-        /* Tail: the whole stack shrinks and fades while the forest
-           orbit panel rises into the same viewport over it. */
+        /* Tail: the whole stack dissolves while the forest orbit panel
+           rises into the same viewport over it. Driven by the orbit
+           section's own rise (start: its top reaches the viewport
+           bottom) so the shrink overlaps the circle entering, matching
+           the reference handoff. A gentle end state keeps the stack
+           ghost legible while ANALYZE sweeps in. */
         const head = root.current?.querySelector(".whatido-head");
         const sectionTop = root.current?.querySelector(
           ".whatido-pin .section-top",
         );
-        tl.to(
-          [sectionTop, head, area].filter(Boolean),
-          {
-            scale: 0.55,
-            opacity: 0.15,
-            y: -30,
-            transformOrigin: "50% 35%",
-            duration: 1,
-          },
-          cards.length - 1,
-        );
+        const orbitSection = document.querySelector(".orbit-section");
+        const tail = gsap.to([sectionTop, head, area].filter(Boolean), {
+          scale: 0.7,
+          opacity: 0.12,
+          y: -24,
+          transformOrigin: "50% 20%",
+          ease: "none",
+          scrollTrigger: orbitSection
+            ? {
+                trigger: orbitSection,
+                start: "top bottom",
+                end: "top top",
+                scrub: 0.5,
+                invalidateOnRefresh: true,
+              }
+            : undefined,
+        });
         return () => {
           tl.scrollTrigger?.kill();
+          tail.scrollTrigger?.kill();
           area?.classList.remove("stack-animated");
         };
       },
@@ -394,12 +405,18 @@ export function WhatIDo() {
 /* One shared wheel. Words sit on the same circle (each wrapper is    */
 /* rotated around the wheel center, word offset by the radius), and    */
 /* scrolling rotates the wheel itself. Center below the viewport so    */
-/* the upper arc is the active reading area. Compact scroll distance.  */
+/* the upper semicircle is the reading area: all four words legible    */
+/* at once when the sweep completes, per the reference framing.        */
 /* ------------------------------------------------------------------ */
 
 const ORBIT_WORDS = ["ANALYZE", "DESIGN", "BUILD", "DELIVER"];
-const ORBIT_STEP_DEG = 26; // angular spacing between word centers
-const ORBIT_DOTS = [13, -13, 39, -39, 65, -65, 91]; // small dots along the arc
+/* Rest angles on the shared semicircle, measured from the top of the
+   arc: ANALYZE lower-left through DELIVER lower-right, all four legible
+   at once in the completed state (reference framing). */
+const SLOT_ANGLES = [-47, -15, 15, 47];
+const ORBIT_DOTS = [-62, -31, 0, 31, 62]; // small dots along the arc
+const ENTER_DEG = 100; // wheel rotation when the panel enters (words hidden)
+const RISE_DEG = 75; // rotation once the panel has fully risen
 
 export function Orbit() {
   const root = useRef<HTMLElement>(null);
@@ -414,11 +431,12 @@ export function Orbit() {
         if (!wheel) return;
 
         /* Radius and center derive from the viewport, recomputed on
-           refresh so resize keeps the composition framed. */
+           refresh so resize keeps the composition framed. The arc's top
+           sits at ~48vh; the compact radius keeps every word on screen. */
         const layout = () => {
           const vw = window.innerWidth;
           const vh = window.innerHeight;
-          const radius = Math.max(vw * 1.15, vh * 1.9);
+          const radius = Math.max(vw * 0.505, vh * 0.72);
           const el = wheel as HTMLElement;
           el.style.setProperty("--orbit-r", `${Math.round(radius)}px`);
         };
@@ -426,27 +444,52 @@ export function Orbit() {
         const ro = new ResizeObserver(layout);
         ro.observe(wheel);
 
-        const tween = gsap.fromTo(
+        /* Phase 1 (rise): while the forest panel climbs into the shared
+           viewport over the dissolving stack, the wheel turns just
+           enough to bring ANALYZE legibly to the right of the arc. */
+        const rise = gsap.fromTo(
           wheel,
-          { rotation: 0 },
+          { rotation: ENTER_DEG },
           {
-            rotation: -ORBIT_STEP_DEG * (ORBIT_WORDS.length - 1),
+            rotation: RISE_DEG,
             ease: "none",
             scrollTrigger: {
               trigger: root.current,
-              start: "top top",
-              end: () => "+=" + Math.round(window.innerHeight * 2.1),
-              scrub: 0.55,
-              pin: true,
-              anticipatePin: 1,
+              start: "top bottom",
+              end: "top top",
+              scrub: 0.45,
               invalidateOnRefresh: true,
               onRefresh: layout,
             },
           },
         );
+
+        /* Phase 2 (pinned sweep): the wheel sweeps counter-clockwise,
+           bringing DESIGN, BUILD and DELIVER up from the lower right
+           until all four rest on the semicircle, then holds before the
+           next section enters. */
+        const sweep = gsap
+          .timeline({
+            scrollTrigger: {
+              trigger: root.current,
+              start: "top top",
+              end: "+=130%",
+              scrub: 0.55,
+              pin: true,
+              anticipatePin: 1,
+              invalidateOnRefresh: true,
+            },
+          })
+          .fromTo(
+            wheel,
+            { rotation: RISE_DEG },
+            { rotation: 0, duration: 0.75, ease: "none", immediateRender: false },
+          )
+          .to({}, { duration: 0.25 });
         return () => {
           ro.disconnect();
-          tween.scrollTrigger?.kill();
+          rise.scrollTrigger?.kill();
+          sweep.scrollTrigger?.kill();
           stage?.classList.remove("orbit-animated");
         };
       },
@@ -469,7 +512,7 @@ export function Orbit() {
             <span
               key={word}
               className="orbit-slot"
-              style={{ ["--a" as string]: `${i * ORBIT_STEP_DEG}deg` }}
+              style={{ ["--a" as string]: `${SLOT_ANGLES[i]}deg` }}
             >
               <span className="orbit-word">{word}</span>
             </span>
