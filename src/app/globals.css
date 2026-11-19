@@ -789,11 +789,32 @@ a.hero-pill:hover {
 
 /* ---------- What I Do: stacking cards ---------- */
 
+/* What I Do sits on the same deep forest surface as the How I Think
+   circle panel, per the user's explicit direction: the two sections
+   read as one continuous dark band, with ivory cards on top. */
 .whatido {
   position: relative;
   z-index: 1;
-  background: var(--cream);
+  background: var(--forest-2);
+  color: var(--on-dark);
   padding: clamp(84px, 11vh, 132px) var(--pad) 0;
+}
+
+.whatido .section-top {
+  color: var(--on-dark-muted);
+}
+
+.whatido .reference-heading {
+  color: var(--on-dark);
+}
+
+.whatido .whatido-sub {
+  color: var(--on-dark-muted);
+}
+
+.whatido .stack-card {
+  color: var(--ink);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.35);
 }
 
 .whatido-pin {
@@ -2108,4 +2129,21 @@ a.hero-pill:hover {
   .social-link-label {
     font-size: 10px;
   }
+}
+
+/* ---------- Hero role accents (append-only) ---------- */
+/* Green accent for the main hero roles, matching the reference pills.
+   #1f7459 is --green darkened one step: --green (#217e61) measures
+   4.16:1 on the pill ground, below the 4.5:1 AA floor at 11px. */
+.hero-accent {
+  color: #1f7459;
+}
+
+a.hero-pill:hover .hero-accent {
+  color: #1f7459;
+}
+
+/* Tagline words reuse the same hover scramble as the name */
+.hero-tagline .scramble-word {
+  cursor: text;
 }
