@@ -802,7 +802,10 @@ a.hero-pill:hover {
    read as one continuous dark band, with ivory cards on top. */
 .whatido {
   position: relative;
-  z-index: 1;
+  /* above the orbit section (z-index 3) so the rising forest panel
+     never covers the stacked cards; the scrubbed fade hands off
+     visually instead of a hard mask edge */
+  z-index: 4;
   background: var(--forest-2);
   color: var(--on-dark);
   padding: clamp(84px, 11vh, 132px) var(--pad) 0;
@@ -910,7 +913,7 @@ a.hero-pill:hover {
 }
 
 /* Compact geometry for shorter desktop viewports (e.g. 1366x768) */
-@media (min-width: 900px) and (max-height: 820px) {
+@media (min-width: 900px) and (max-height: 1000px) {
   .hero-cta {
     margin-top: 16px;
   }
@@ -926,27 +929,35 @@ a.hero-pill:hover {
     gap: 14px;
   }
   :root {
-    --card-h: 42vh;
+    --card-h: 290px;
     --strip: 14px;
-    --headoff: 62px;
+    --headoff: 80px;
   }
   .whatido-pin {
-    padding-top: 68px;
+    padding-top: 56px;
   }
   .whatido-head {
-    margin-bottom: 16px;
+    margin-bottom: 10px;
   }
   .whatido-head .reference-heading {
     font-size: clamp(34px, 4.6vw, 56px);
   }
   .whatido-head .mint-rule {
-    margin: 12px 0 10px;
+    margin: 10px 0 8px;
   }
   .whatido-sub {
     font-size: 14px;
   }
+  .stack-animated .stack-card {
+    padding-top: 14px;
+    padding-bottom: 14px;
+  }
+  .stack-animated .stack-card-top {
+    margin-bottom: 8px;
+  }
   .stack-card h3 {
-    font-size: clamp(22px, 2.4vw, 32px);
+    font-size: clamp(20px, 2.2vw, 28px);
+    margin-bottom: 6px;
   }
   .stack-card > p {
     display: -webkit-box;
