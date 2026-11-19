@@ -35,7 +35,7 @@ export function introWillPlayThisLoad() {
 
 const POOL = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const TICK_MS = 34; // character update cadence (~30fps, inside 25-45ms)
-const TOTAL_MS = 850; // total scramble duration (owner: a little slow, Nov 19 2026)
+const TOTAL_MS = 1500; // total scramble duration (owner: slower, Nov 19 2026)
 
 export function ScrambleText({
   text,
@@ -189,8 +189,10 @@ export function ScrambleName() {
 /* ------------------------------------------------------------------ */
 /* HERO RIDE: Kick crosses the hero on a red stunt rail (SMIL)         */
 /*                                                                     */
-/* He starts directly at the left edge mark and rides the full span    */
-/* to the right edge mark, looping. On a first visit he waits at the   */
+/* He starts directly at the left edge mark and ends at the right    */
+/* edge mark, looping (owner: ride exactly between the two marks,    */
+/* Nov 19 2026). The red rail is drawn a touch wider than the motion */
+/* path so the line still runs edge to edge. On a first visit he     */
 /* left mark until the greeting curtain lifts (~4.1s); on reloads,     */
 /* where the curtain is skipped, he starts almost immediately. The     */
 /* rider sits behind the text layer with a soft cream veil over the    */
@@ -234,7 +236,7 @@ export function KickTrack() {
             repeatCount="indefinite"
             rotate="auto"
             begin={begin}
-            path="M -260 780 C 300 720, 470 585, 760 595 C 1050 605, 1160 750, 1700 660"
+            path="M -60 770 C 280 722, 465 586, 760 595 C 1055 605, 1165 748, 1745 652"
           />
           <image
             className="kick-rider-img"
@@ -274,7 +276,7 @@ export function KickTrack() {
             repeatCount="indefinite"
             rotate="auto"
             begin={begin}
-            path="M -80 730 C 90 690, 150 520, 250 540 C 330 560, 360 660, 520 620"
+            path="M -45 725 C 90 690, 150 520, 250 540 C 330 560, 370 655, 630 592"
           />
           <image
             className="kick-rider-img"
@@ -588,11 +590,12 @@ export function Orbit() {
 
         /* Radius and center derive from the viewport, recomputed on
            refresh so resize keeps the composition framed. The arc's top
-           sits at ~48vh; the compact radius keeps every word on screen. */
+           Radius slightly reduced at the owner's request (Nov 19 2026),
+           keeping the same half-circle composition. */
         const layout = () => {
           const vw = window.innerWidth;
           const vh = window.innerHeight;
-          const radius = Math.max(vw * 0.685, vh * 1.09);
+          const radius = Math.max(vw * 0.55, vh * 0.87);
           const el = wheel as HTMLElement;
           el.style.setProperty("--orbit-r", `${Math.round(radius)}px`);
         };
@@ -690,6 +693,56 @@ export function Orbit() {
 }
 
 /* ------------------------------------------------------------------ */
+/* SECTION COLOUR CURVES: curved boundary that flattens on scroll      */
+/*                                                                     */
+/* Where the page switches between light and dark surfaces, the new    */
+/* colour enters as a convex curve and smoothly flattens into a        */
+/* straight edge as you scroll (owner reference, Nov 19 2026).         */
+/* ------------------------------------------------------------------ */
+
+export function SectionCurve({ from, to }: { from: string; to: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (reduceMotion()) return;
+    const el = ref.current;
+    if (!el) return;
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        el,
+        { "--curve-r": "100%" },
+        {
+          "--curve-r": "0%",
+          ease: "none",
+          scrollTrigger: {
+            trigger: el,
+            start: "top bottom",
+            end: "top 55%",
+            scrub: 0.4,
+            invalidateOnRefresh: true,
+          },
+        },
+      );
+    }, ref);
+    return () => ctx.revert();
+  }, []);
+  return (
+    <div
+      ref={ref}
+      className="section-curve"
+      style={
+        {
+          ["--from" as string]: `var(--${from})`,
+          ["--to" as string]: `var(--${to})`,
+        } as React.CSSProperties
+      }
+      aria-hidden="true"
+    >
+      <i />
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* BEYOND THE CODE: editorial journey timeline                         */
 /* ------------------------------------------------------------------ */
 
@@ -710,6 +763,28 @@ export function Journey() {
     if (reduceMotion()) return;
     const ctx = gsap.context(() => {
       const line = root.current?.querySelector(".timeline-line i");
+      const timelineEl = root.current?.querySelector(".timeline");
+      /* Kick rides the timeline's middle line: he tracks the drawn tip,
+         moving down as you scroll down and back up as you scroll up
+         (owner request, Nov 19 2026). */
+      const kick = root.current?.querySelector(".timeline-kick");
+      if (kick && timelineEl) {
+        gsap.fromTo(
+          kick,
+          { top: 0 },
+          {
+            top: () => `${(timelineEl as HTMLElement).clientHeight}px`,
+            ease: "none",
+            scrollTrigger: {
+              trigger: timelineEl,
+              start: "top 72%",
+              end: "bottom 62%",
+              scrub: 0.45,
+              invalidateOnRefresh: true,
+            },
+          },
+        );
+      }
       if (line) {
         gsap.fromTo(
           line,
@@ -777,6 +852,12 @@ export function Journey() {
         <div className="timeline-line" aria-hidden="true">
           <i />
         </div>
+        <img
+          className="timeline-kick"
+          src="/images/kick/kick-rider.png"
+          alt=""
+          aria-hidden="true"
+        />
         {items.map((item, i) => (
           <div
             className={`timeline-item ${i % 2 ? "right" : "left"}`}
@@ -822,4 +903,4 @@ export function Journey() {
       </div>
     </section>
   );
-}
+              }
