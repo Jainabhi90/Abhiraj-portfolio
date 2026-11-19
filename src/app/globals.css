@@ -40,6 +40,7 @@
 
   /* Stacking cards */
   --card-h: clamp(400px, 56vh, 540px);
+  --headoff: clamp(64px, 10vh, 104px);
   --strip: 18px;
 }
 
@@ -674,6 +675,55 @@ html.intro-complete .intro.intro-active {
   border-color: var(--ink);
 }
 
+.hero-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: clamp(20px, 3.2vh, 30px);
+  color: var(--muted);
+}
+
+.hero-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 9px 16px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  background: var(--ivory);
+  transition:
+    border-color 0.25s ease,
+    transform 0.25s ease;
+}
+
+a.hero-pill:hover {
+  border-color: var(--green);
+  color: var(--green);
+  transform: translateY(-1px);
+}
+
+.hero-socials {
+  display: inline-flex;
+  gap: 18px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  padding-left: 6px;
+}
+
+.hero-socials a {
+  color: var(--muted);
+  transition: color 0.25s ease;
+}
+
+.hero-socials a:hover {
+  color: var(--green);
+}
+
 .hero-side {
   display: flex;
   flex-direction: column;
@@ -740,6 +790,8 @@ html.intro-complete .intro.intro-active {
 /* ---------- What I Do: stacking cards ---------- */
 
 .whatido {
+  position: relative;
+  z-index: 1;
   background: var(--cream);
   padding: clamp(84px, 11vh, 132px) var(--pad) 0;
 }
@@ -766,7 +818,7 @@ html.intro-complete .intro.intro-active {
 
 .stack-area {
   position: relative;
-  height: calc(var(--card-h) + 3 * var(--strip));
+  height: calc(var(--card-h) + 3 * var(--headoff));
   max-width: 1150px;
 }
 
@@ -786,6 +838,7 @@ html.intro-complete .intro.intro-active {
   height: var(--card-h);
   overflow: hidden;
   will-change: transform;
+  transform-origin: 50% 0%;
 }
 
 .stack-card-top {
@@ -829,9 +882,24 @@ html.intro-complete .intro.intro-active {
 
 /* Compact geometry for shorter desktop viewports (e.g. 1366x768) */
 @media (min-width: 900px) and (max-height: 820px) {
+  .hero-cta {
+    margin-top: 16px;
+  }
+  .hero-meta {
+    margin-top: 14px;
+  }
+  .hero-pill {
+    padding: 6px 13px;
+    font-size: 10px;
+  }
+  .hero-socials {
+    font-size: 10px;
+    gap: 14px;
+  }
   :root {
-    --card-h: 46vh;
+    --card-h: 42vh;
     --strip: 14px;
+    --headoff: 62px;
   }
   .whatido-pin {
     padding-top: 68px;
@@ -861,8 +929,9 @@ html.intro-complete .intro.intro-active {
 
 @media (min-width: 900px) and (max-height: 660px) {
   :root {
-    --card-h: 44vh;
+    --card-h: 40vh;
     --strip: 12px;
+    --headoff: 54px;
   }
   .whatido-pin .section-top {
     display: none;
@@ -878,8 +947,16 @@ html.intro-complete .intro.intro-active {
 /* ---------- Analyze / Design / Build: typography wheel ---------- */
 
 .orbit-section {
+  position: relative;
+  z-index: 3;
   background: var(--forest-2);
   color: var(--on-dark);
+}
+
+@media (min-width: 900px) and (min-height: 560px) and (prefers-reduced-motion: no-preference) {
+  .orbit-section {
+    margin-top: -38vh;
+  }
 }
 
 .orbit-stage {
@@ -908,7 +985,7 @@ html.intro-complete .intro.intro-active {
 .orbit-wheel {
   position: absolute;
   left: 50%;
-  top: calc(100% + var(--orbit-r, 1600px) - 40vh);
+  top: calc(100% + var(--orbit-r, 1600px) - 52vh);
   width: 0;
   height: 0;
   transform-origin: 0 0;
@@ -1480,6 +1557,81 @@ html.intro-complete .intro.intro-active {
   margin-left: 0.12em;
 }
 
+/* ---------- Online Presence ---------- */
+
+.presence {
+  background: var(--cream);
+}
+
+.presence-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-top: clamp(28px, 4.5vh, 48px);
+}
+
+.presence-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--ivory);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: clamp(20px, 3vh, 30px);
+  min-height: 190px;
+  box-shadow: 0 12px 30px rgba(21, 27, 23, 0.06);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.presence-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--green);
+  box-shadow: 0 20px 44px rgba(21, 27, 23, 0.11);
+}
+
+.presence-card-label {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+}
+
+.presence-card-title {
+  font-family: var(--font-d);
+  font-weight: 600;
+  font-size: clamp(19px, 1.6vw, 24px);
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.presence-card-title--sm {
+  font-size: 15px;
+  letter-spacing: 0;
+}
+
+.presence-card-copy {
+  color: var(--muted);
+  font-size: 14px;
+  margin-top: auto;
+}
+
+@media (max-width: 1100px) {
+  .presence-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .presence-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .contact-bottom {
   display: flex;
   justify-content: space-between;
@@ -1492,6 +1644,14 @@ html.intro-complete .intro.intro-active {
 .contact-bottom > p {
   color: var(--on-dark-muted);
   font-size: 17px;
+}
+
+.contact-loc {
+  display: inline-block;
+  margin-top: 14px;
+  color: var(--on-dark-muted);
+  font-size: 11px;
+  letter-spacing: 0.1em;
 }
 
 .email-link {
