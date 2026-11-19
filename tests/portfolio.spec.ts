@@ -362,7 +362,7 @@ test("fresh-load continuous scroll stacks cards in order, card 1 first", async (
   expect(t[0]).toBeLessThan(500);
   for (let i = 1; i < 4; i++) expect(t[i]).toBeGreaterThanOrEqual(760);
   // Early progress: card 2 rises in; cards 3 and 4 stay parked.
-  const early = pinStart + Math.round(768 * 1.8 * 0.25);
+  const early = pinStart + Math.round(768 * 2 * 0.25);
   for (let y = pinStart; y <= early; y += 120) await jumpTo(page, y);
   await page.waitForTimeout(400);
   t = await tops();
@@ -370,6 +370,25 @@ test("fresh-load continuous scroll stacks cards in order, card 1 first", async (
   expect(t[1]).toBeGreaterThan(t[0]);
   expect(t[2]).toBeGreaterThanOrEqual(760);
   expect(t[3]).toBeGreaterThanOrEqual(760);
+  // Dwell before handoff: card 4 fully readable at rest, headings 1-3
+  // visible above it, and the stack not yet shrinking.
+  const dwell = pinStart + Math.round(768 * 2 * 0.92);
+  for (let y = early; y <= dwell; y += 120) await jumpTo(page, y);
+  await page.waitForTimeout(400);
+  t = await tops();
+  for (let i = 0; i < 4; i++) expect(t[i]).toBeGreaterThanOrEqual(0);
+  expect(t[0]).toBeLessThan(t[1]);
+  expect(t[1]).toBeLessThan(t[2]);
+  expect(t[2]).toBeLessThan(t[3]);
+  expect(t[3]).toBeLessThan(660);
+  const card4 = page.locator(".stack-card").nth(3);
+  const body = await card4.locator("p").first().boundingBox();
+  expect(body).not.toBeNull();
+  expect(body!.y + body!.height).toBeLessThan(768);
+  const scale = await page
+    .locator(".stack-area")
+    .evaluate((e) => new DOMMatrixReadOnly(getComputedStyle(e).transform).a);
+  expect(scale).toBeGreaterThan(0.9);
   // Reverse to the pin start: card 1 stands alone again.
   for (let y = early; y >= pinStart; y -= 160) await jumpTo(page, y);
   await page.waitForTimeout(400);
@@ -388,7 +407,7 @@ test("What I Do to orbit: stack shrinks into the shared viewport", async ({
     .evaluate((e) => e.getBoundingClientRect().top + window.scrollY);
   // Tail: the stack dissolves (scrubbed by the orbit rise) while the
   // forest orbit panel climbs over the bottom of the same viewport.
-  await jumpTo(page, pinStart + Math.round(768 * 2.03));
+  await jumpTo(page, pinStart + Math.round(768 * 2.3));
   await page.waitForTimeout(600);
   const scale = await page.locator(".stack-area").evaluate((e) => {
     const m = getComputedStyle(e).transform.match(/matrix\(([^)]+)\)/);
