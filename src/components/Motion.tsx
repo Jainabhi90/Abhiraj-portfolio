@@ -293,7 +293,7 @@ export function WhatIDo() {
           tl.fromTo(
             cards[i],
             { y: () => pinEl.clientHeight + i * headerOff() },
-            { y: () => i * headerOff(), duration: 1, immediateRender: false },
+            { y: () => i * headerOff(), duration: 1, immediateRender: true },
             at,
           );
         }
@@ -614,7 +614,8 @@ export function Journey() {
       </h2>
       <span className="mint-rule" />
       <p className="journey-sub">
-        Leadership, events, and collaborative work.
+        Leadership, events, and collaborative work, the parts of college where
+        I run things instead of just shipping them.
       </p>
       <div className="timeline">
         <div className="timeline-line" aria-hidden="true">
@@ -658,7 +659,23 @@ export function Journey() {
         </div>
         <div>
           <strong>91.56</strong>
-          <p>JEE percentile</p>
+          <p>
+            JEE Main percentile
+            <br />
+            qualified JEE Advanced & BITSAT
+          </p>
+        </div>
+        <div>
+          <strong>94%</strong>
+          <p>Class 12 CBSE</p>
+        </div>
+        <div>
+          <strong>8.95</strong>
+          <p>
+            CGPA / 10
+            <br />
+            current
+          </p>
         </div>
         <div>
           <strong>97.6%</strong>
@@ -670,8 +687,9 @@ export function Journey() {
         </div>
       </div>
       <p className="workshop mono">
-        ALSO / STATE-LEVEL BADMINTON PLAYER · COMPLETED THE BE10X AI TOOLS
-        WORKSHOP
+        ALSO / STATE-LEVEL BADMINTON PLAYER · VITEEE RANK 4,570 · COMPLETED
+        THE BE10X AI TOOLS WORKSHOP · BUILDING IN PUBLIC ACROSS THREE PRODUCT
+        IDEAS
       </p>
     </section>
   );
