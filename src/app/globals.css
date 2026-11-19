@@ -727,13 +727,21 @@ a.hero-pill:hover {
 .hero-side {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  align-items: center;
+  gap: 8px;
   color: var(--muted);
-  margin-bottom: 18px;
+  margin: 22px 0 0;
+  font-size: 15px;
+  letter-spacing: 0.08em;
 }
 
 .hero-role {
-  color: var(--ink);
+  color: #1f7459;
+  font-weight: 600;
+}
+
+.hero-side .hero-accent {
+  font-weight: 600;
 }
 
 .hero-bottom {
@@ -1970,7 +1978,7 @@ a.hero-pill:hover {
     padding: 40px 0 32px;
   }
   .hero-side {
-    font-size: 10px;
+    font-size: 12px;
   }
   .hero-bottom {
     gap: 20px;
@@ -2137,6 +2145,11 @@ a.hero-pill:hover {
    4.16:1 on the pill ground, below the 4.5:1 AA floor at 11px. */
 .hero-accent {
   color: #1f7459;
+}
+
+.hero-pill-lead {
+  color: #1f7459;
+  border-color: color-mix(in srgb, #1f7459 40%, var(--border));
 }
 
 a.hero-pill:hover .hero-accent {
