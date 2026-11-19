@@ -194,9 +194,10 @@ export function Cursor() {
   }, []);
   return (
     <div ref={ref} className="cursor" aria-hidden="true">
-      {/* Kick Buttowski's glove, black, replaces the native arrow. The
-          fingertip is the pointer hotspot (see CSS margin). */}
-      <img src="/images/kick/kick-glove.png" alt="" width={96} height={129} />
+      {/* Kick Buttowski's glove in its original yellowish colour,
+          replacing the native arrow. The fingertip is the pointer
+          hotspot (see CSS margin). */}
+      <img src="/images/kick/kick-glove.png" alt="" width={89} height={125} />
     </div>
   );
 }
