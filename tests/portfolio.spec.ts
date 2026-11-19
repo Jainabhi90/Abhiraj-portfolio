@@ -1,5 +1,6 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+
 const slugs = [
   "niolearn",
   "arbdetector",
@@ -7,7 +8,28 @@ const slugs = [
   "github-analyser",
   "fnatics",
 ];
-test("responsive page, loaded imagery, five case studies and excluded public content", async ({
+
+/* Lenis owns smooth scrolling; programmatic jumps must go through it. */
+async function jumpTo(page: Page, y: number) {
+  await page.evaluate((yy) => {
+    const lenis = (
+      window as unknown as {
+        __lenis?: { scrollTo: (y: number, o: object) => void };
+      }
+    ).__lenis;
+    if (lenis) lenis.scrollTo(yy, { immediate: true, force: true });
+    else window.scrollTo(0, yy);
+  }, y);
+  await page.waitForTimeout(150);
+}
+
+async function skipIntro(page: Page) {
+  const skip = page.getByRole("button", { name: /skip intro/i });
+  if (await skip.isVisible().catch(() => false)) await skip.click();
+  await expect(page.locator(".intro")).not.toHaveClass(/intro-active/);
+}
+
+test("responsive layout, cream hero, five works, journey, no excluded content", async ({
   page,
   request,
 }) => {
@@ -24,8 +46,76 @@ test("responsive page, loaded imagery, five case studies and excluded public con
       ),
     ).toBeTruthy();
     await expect(page.locator(".work-row")).toHaveCount(5);
-    await expect(page.locator("body")).not.toContainText(/eduos/i);
   }
+  // The decorative hero rectangle is gone for good.
+  await expect(page.locator(".hero-rect")).toHaveCount(0);
+  await expect(page.locator(".hero canvas")).toHaveCount(0);
+  // Cream journey timeline, NioLearn first; EduOS stays excluded.
+  await expect(page.locator(".timeline-item")).toHaveCount(7);
+  await expect(page.locator("body")).not.toContainText(/eduos/i);
+  await expect(page.locator(".timeline-card").first()).toContainText(
+    /NioLearn/,
+  );
+  await expect(page.locator(".timeline")).toContainText(/8\.95/);
+  // Experience moved directly after Who Am I, before What I Do.
+  const order = await page.evaluate(() => {
+    const ids = ["about", "experience", "expertise", "work", "presence", "contact"];
+    return ids.map(
+      (id) => document.getElementById(id)!.getBoundingClientRect().top,
+    );
+  });
+  for (let i = 1; i < order.length; i++)
+    expect(order[i]).toBeGreaterThan(order[i - 1]);
+  // Hero meta: role pills + inline socials.
+  await expect(page.locator(".hero-pill")).toHaveCount(2);
+  await expect(page.locator(".hero-meta .social-link")).toHaveCount(3);
+  await expect(page.locator(".contact .social-link")).toHaveCount(3);
+  // Online presence cards with verified links.
+  const cards = page.locator(".presence-card");
+  await expect(cards).toHaveCount(4);
+  await expect(cards.nth(0)).toHaveAttribute(
+    "href",
+    "https://github.com/Jainabhi90",
+  );
+  await expect(cards.nth(1)).toHaveAttribute("href", /linkedin/);
+  await expect(cards.nth(3)).toHaveAttribute(
+    "href",
+    "mailto:jainabhi90980@gmail.com",
+  );
+  // Stats trimmed to LeetCode, JEE and CGPA only (2026-11-19 user request);
+  // hackathon lives in Beyond the Code, Class 10/12 stats and the ALSO line are gone.
+  const achievements = page.locator(".achievements");
+  await expect(achievements).toContainText("150+");
+  await expect(achievements).toContainText("91.56");
+  await expect(achievements).toContainText("8.95");
+  await expect(achievements).not.toContainText("97.6%");
+  await expect(achievements).not.toContainText("~94%");
+  await expect(achievements).not.toContainText("hackathon");
+  await expect(page.locator(".workshop")).toHaveCount(0);
+  // Presence cards switch to a green background with light text on hover.
+  const firstCard = cards.nth(0);
+  const bgBefore = await firstCard.evaluate(
+    (el) => getComputedStyle(el).backgroundColor,
+  );
+  await firstCard.hover();
+  await expect
+    .poll(
+      () => firstCard.evaluate((el) => getComputedStyle(el).backgroundColor),
+    )
+    .toBe("rgb(33, 126, 97)");
+  expect(bgBefore).not.toBe("rgb(33, 126, 97)");
+  const titleColor = await firstCard
+    .locator(".presence-card-title")
+    .evaluate((el) => getComputedStyle(el).color);
+  expect(titleColor).toBe("rgb(246, 245, 240)");
+  expect(errors).toEqual([]);
+});
+
+test("case study pages load with imagery; excluded routes stay excluded", async ({
+  page,
+  request,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
   for (const slug of slugs) {
     const r = await page.goto("/projects/" + slug);
     expect(r?.status()).toBe(200);
@@ -56,8 +146,8 @@ test("responsive page, loaded imagery, five case studies and excluded public con
   const pdf = await request.get("/resume/Abhiraj-Jain.pdf");
   expect(pdf.status()).toBe(200);
   expect(pdf.headers()["content-type"]).toContain("application/pdf");
-  expect(errors).toEqual([]);
 });
+
 test("menu, keyboard focus, in-page navigation and contact", async ({
   page,
 }) => {
@@ -86,6 +176,7 @@ test("menu, keyboard focus, in-page navigation and contact", async ({
     /Email copied|Select the email/,
   );
 });
+
 test("all technology filters, genuine logos, accessible contrast", async ({
   page,
 }) => {
@@ -121,21 +212,362 @@ test("all technology filters, genuine logos, accessible contrast", async ({
     .analyze();
   expect(scan.violations).toEqual([]);
 });
-test("technology logo performs exactly two turns per hover entry", async ({
+
+test("filtering never strands downstream sections (ScrollTrigger refresh)", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
-  await page.getByRole("button", { name: "Skip intro" }).click();
-  const logo = page.locator(".technology-card img").first();
-  await logo.scrollIntoViewIfNeeded();
-  await page.locator(".technology-card").first().hover();
+  await skipIntro(page);
+  await page.getByRole("button", { name: "Frontend", exact: true }).click();
+  await expect(page.locator(".technology-card")).toHaveCount(7);
+  // The section shrank; triggers must have been refreshed so journey,
+  // experience and contact still reveal and remain reachable.
+  await page.waitForTimeout(400);
+  await jumpTo(
+    page,
+    await page.evaluate(() => document.body.scrollHeight),
+  );
+  await expect(page.locator("#contact")).toBeInViewport();
+  await expect(page.locator(".email-link")).toBeVisible();
+  await expect
+    .poll(() =>
+      page.locator("#contact h2").evaluate((e) => getComputedStyle(e).opacity),
+      { timeout: 4000 },
+    )
+    .toBe("1");
+  await page.getByRole("button", { name: "All Categories", exact: true }).click();
+  await expect(page.locator(".technology-card")).toHaveCount(25);
+});
+
+test("greeting intro plays once per session and is skippable", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await expect(page.locator(".intro")).toHaveClass(/intro-active/);
+  await expect(
+    page.getByRole("button", { name: /skip intro/i }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: /skip intro/i }).click();
+  await expect(page.locator(".intro")).not.toHaveClass(/intro-active/);
+  // A reload in the same tab session does not replay the greeting
+  // (page JS cannot distinguish a hard reload from a normal one).
+  await page.reload();
+  await page.waitForTimeout(1200);
+  await expect(page.locator(".intro")).not.toHaveClass(/intro-active/);
+});
+
+test("per-word scramble: independent words, A-Z0-9 pool, exact restore", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await skipIntro(page);
+  const first = page.locator(".scramble-word.name-first");
+  const last = page.locator(".scramble-word.name-last-word");
+  const role = page.locator(".scramble-word.hero-role");
+  await first.hover();
+  await expect(first).toHaveClass(/is-scrambling/);
+  // The other words are untouched while ABHIRAJ scrambles.
+  await expect(last).not.toHaveClass(/is-scrambling/);
+  await expect(role).not.toHaveClass(/is-scrambling/);
+  expect(await last.textContent()).toBe("jain");
+  expect(await role.textContent()).toBe("SOFTWARE ENGINEER");
+  // Pool characters only (plus the held spaces).
+  const mid = await first.textContent();
+  expect(mid).toMatch(/^[A-Z0-9 ]+$/);
+  // Exact restore once the run finishes.
+  await expect(first).not.toHaveClass(/is-scrambling/, { timeout: 4000 });
+  expect(await first.textContent()).toBe("ABHIRAJ");
+  // Character slots keep stable widths: no layout shift of the dot.
+  const dotX = await page
+    .locator(".name-dot")
+    .evaluate((e) => e.getBoundingClientRect().x);
+  // Re-entering needs the pointer to leave first (pointerenter-driven).
+  await page.mouse.move(20, 20);
+  await first.hover();
+  await expect(first).toHaveClass(/is-scrambling/);
+  const dotXMid = await page
+    .locator(".name-dot")
+    .evaluate((e) => e.getBoundingClientRect().x);
+  expect(Math.abs(dotXMid - dotX)).toBeLessThan(2);
+});
+
+test("Who Am I reveal changes color, never opacity", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await skipIntro(page);
+  const words = page.locator(".whoami-copy .wr-word");
+  await expect(words.first()).toBeVisible();
+  const colorAt = async () =>
+    words.nth(1).evaluate((e) => getComputedStyle(e).color);
+  // Approach: first words still muted before the reveal reaches them.
+  const aboutTop = await page
+    .locator("#about")
+    .evaluate((e) => e.getBoundingClientRect().top + window.scrollY);
+  await jumpTo(page, Math.max(0, aboutTop - 700));
+  const muted = await colorAt();
+  await jumpTo(page, aboutTop - 200);
+  const revealed = await colorAt();
+  expect(revealed).not.toBe(muted);
+  // No word ever hits opacity 0 anywhere through the section.
+  for (const y of [aboutTop - 500, aboutTop - 100, aboutTop + 300]) {
+    await jumpTo(page, Math.max(0, y));
+    const opacities = await words.evaluateAll((els) =>
+      els.slice(0, 12).map((e) => getComputedStyle(e).opacity),
+    );
+    for (const o of opacities) expect(Number(o)).toBeGreaterThan(0.05);
+  }
+});
+
+test("What I Do pinned stack keeps every card heading visible", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto("/");
+  await skipIntro(page);
+  await expect(page.locator(".stack-card")).toHaveCount(4);
+  const pinStart = await page
+    .locator(".whatido-pin")
+    .evaluate((e) => e.getBoundingClientRect().top + window.scrollY);
+  // Pin distance is 1.8 viewport-heights across 3 timeline units; the
+  // full stack has nearly settled by this point, just before the orbit
+  // rise starts dissolving it.
+  await jumpTo(page, pinStart + Math.round(768 * 1.8) - 4);
+  await page.waitForTimeout(400);
+  const heads = page.locator(".stack-card h3");
+  await expect(heads).toHaveCount(4);
+  for (let i = 0; i < 4; i++) {
+    const box = await heads
+      .nth(i)
+      .evaluate((e) => e.getBoundingClientRect().toJSON());
+    expect(box.top).toBeGreaterThanOrEqual(0);
+    expect(box.bottom).toBeLessThanOrEqual(768);
+    expect(box.height).toBeGreaterThan(12);
+  }
+  // Covered cards never fully cover: later cards sit lower than earlier ones.
+  const tops = await page
+    .locator(".stack-card")
+    .evaluateAll((els) => els.map((e) => e.getBoundingClientRect().top));
+  for (let i = 1; i < tops.length; i++)
+    expect(tops[i]).toBeGreaterThan(tops[i - 1] + 40);
+  // Stacking is transform-only: moved cards stay laid out via transforms.
+  const lastTransform = await page
+    .locator(".stack-card")
+    .nth(2)
+    .evaluate((e) => getComputedStyle(e).transform);
+  expect(lastTransform).toContain("matrix");
+});
+
+test("fresh-load continuous scroll stacks cards in order, card 1 first", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto("/");
+  await skipIntro(page);
+  const pinStart = await page
+    .locator(".whatido-pin")
+    .evaluate((e) => e.getBoundingClientRect().top + window.scrollY);
+  // Walk to the pin in small steps, like a real continuous scroll.
+  for (let y = 0; y <= pinStart + 2; y += 140) {
+    await jumpTo(page, Math.min(y, pinStart + 2));
+  }
+  await page.waitForTimeout(400);
+  const tops = () =>
+    page
+      .locator(".stack-card")
+      .evaluateAll((els) =>
+        els.map((e) => e.getBoundingClientRect().top),
+      );
+  // At pin start only card 1 is in view; cards 2-4 park below the fold.
+  let t = await tops();
+  expect(t[0]).toBeGreaterThan(100);
+  expect(t[0]).toBeLessThan(500);
+  for (let i = 1; i < 4; i++) expect(t[i]).toBeGreaterThanOrEqual(760);
+  // Early progress: card 2 rises in; cards 3 and 4 stay parked.
+  const early = pinStart + Math.round(768 * 2 * 0.25);
+  for (let y = pinStart; y <= early; y += 120) await jumpTo(page, y);
+  await page.waitForTimeout(400);
+  t = await tops();
+  expect(t[1]).toBeLessThan(768);
+  expect(t[1]).toBeGreaterThan(t[0]);
+  expect(t[2]).toBeGreaterThanOrEqual(760);
+  expect(t[3]).toBeGreaterThanOrEqual(760);
+  // Dwell before handoff: card 4 fully readable at rest, headings 1-3
+  // visible above it, and the stack not yet shrinking.
+  const dwell = pinStart + Math.round(768 * 2 * 0.92);
+  for (let y = early; y <= dwell; y += 120) await jumpTo(page, y);
+  await page.waitForTimeout(400);
+  t = await tops();
+  for (let i = 0; i < 4; i++) expect(t[i]).toBeGreaterThanOrEqual(0);
+  expect(t[0]).toBeLessThan(t[1]);
+  expect(t[1]).toBeLessThan(t[2]);
+  expect(t[2]).toBeLessThan(t[3]);
+  expect(t[3]).toBeLessThan(660);
+  const card4 = page.locator(".stack-card").nth(3);
+  const body = await card4.locator("p").first().boundingBox();
+  expect(body).not.toBeNull();
+  expect(body!.y + body!.height).toBeLessThan(768);
+  // Card 4's complete content, including its last bullet, sits inside
+  // the unclipped viewport area and inside the card's own box (no
+  // overflow clipping).
+  const lastBullet = card4.locator("li").last();
+  const lb = await lastBullet.boundingBox();
+  expect(lb).not.toBeNull();
+  expect(lb!.y + lb!.height).toBeLessThan(760);
+  const c4 = await card4.boundingBox();
+  expect(c4).not.toBeNull();
+  expect(lb!.y + lb!.height).toBeLessThanOrEqual(c4!.y + c4!.height - 2);
+  // Not covered either: the topmost element at the last bullet's center
+  // belongs to card 4 (catches the orbit panel masking the stack).
+  const coveredBy = await lastBullet.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    const top = document.elementFromPoint(
+      r.left + r.width / 2,
+      r.top + r.height / 2,
+    );
+    return top ? el.contains(top) || top.contains(el) : false;
+  });
+  expect(coveredBy).toBe(true);
+  const scale = await page
+    .locator(".stack-area")
+    .evaluate((e) => new DOMMatrixReadOnly(getComputedStyle(e).transform).a);
+  expect(scale).toBeGreaterThan(0.9);
+  // Reverse to the pin start: card 1 stands alone again.
+  for (let y = early; y >= pinStart; y -= 160) await jumpTo(page, y);
+  await page.waitForTimeout(400);
+  t = await tops();
+  for (let i = 1; i < 4; i++) expect(t[i]).toBeGreaterThanOrEqual(760);
+});
+
+test("What I Do to orbit: stack shrinks into the shared viewport", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto("/");
+  await skipIntro(page);
+  const pinStart = await page
+    .locator(".whatido-pin")
+    .evaluate((e) => e.getBoundingClientRect().top + window.scrollY);
+  // Tail: the stack dissolves (scrubbed by the orbit rise) while the
+  // forest orbit panel climbs over the bottom of the same viewport.
+  await jumpTo(page, pinStart + Math.round(768 * 2.3));
+  await page.waitForTimeout(600);
+  const scale = await page.locator(".stack-area").evaluate((e) => {
+    const m = getComputedStyle(e).transform.match(/matrix\(([^)]+)\)/);
+    return m ? Number(m[1].split(",")[0]) : 1;
+  });
+  expect(scale).toBeLessThan(0.85);
+  expect(scale).toBeGreaterThan(0.6);
+  const orbitBox = await page
+    .locator(".orbit-stage")
+    .evaluate((e) => e.getBoundingClientRect().toJSON());
+  expect(orbitBox.top).toBeLessThan(768);
+  expect(orbitBox.top).toBeGreaterThan(768 * 0.3);
+});
+
+test("orbit: shared-center wheel rotates with scroll and exits cleanly", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await skipIntro(page);
+  const wheel = page.locator(".orbit-wheel");
+  const orbitTop = await page
+    .locator(".orbit-section")
+    .evaluate((e) => e.getBoundingClientRect().top + window.scrollY);
+  // Viewport-derived radius is set once the wheel animates: compact
+  // semicircle (roughly half the viewport width), not a giant arc.
+  const radius = await wheel.evaluate((e) =>
+    (e as HTMLElement).style.getPropertyValue("--orbit-r"),
+  );
+  expect(Number.parseInt(radius)).toBeGreaterThan(600);
+  expect(Number.parseInt(radius)).toBeLessThan(1200);
+  // Mid-pin: the sweep is rotating the wheel toward its rest state.
+  await jumpTo(page, orbitTop + Math.round(900 * 0.5));
+  await page.waitForTimeout(400);
+  const midTransform = await wheel.evaluate(
+    (e) => getComputedStyle(e).transform,
+  );
+  expect(midTransform).toContain("matrix");
+  const m = midTransform.match(/matrix\(([^)]+)\)/);
+  expect(m).toBeTruthy();
+  const angle =
+    (Math.atan2(
+      Number(m![1].split(",")[1]),
+      Number(m![1].split(",")[0]),
+    ) *
+      180) /
+    Math.PI;
+  expect(angle).toBeGreaterThan(10);
+  expect(angle).toBeLessThan(45);
+  // Completed state: all four words fully legible inside the viewport.
+  await jumpTo(page, orbitTop + Math.round(900 * 1.3) - 80);
+  await page.waitForTimeout(500);
+  const words = page.locator(".orbit-word");
+  await expect(words).toHaveCount(4);
+  for (let i = 0; i < 4; i++) {
+    const box = await words
+      .nth(i)
+      .evaluate((e) => e.getBoundingClientRect().toJSON());
+    expect(box.left).toBeGreaterThanOrEqual(0);
+    expect(box.right).toBeLessThanOrEqual(1440);
+    expect(box.top).toBeGreaterThanOrEqual(0);
+    expect(box.bottom).toBeLessThanOrEqual(900);
+    expect(box.width).toBeGreaterThan(60);
+  }
+  // Clean exit: scrolling past the pin lands on Selected Works.
+  await jumpTo(page, orbitTop + Math.round(900 * 1.3) + 900);
+  await expect(page.locator("#work")).toBeInViewport();
+});
+
+test("mobile fallbacks: static orbit list and unpinned cards", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await skipIntro(page);
+  await expect(page.locator(".orbit-stage")).not.toHaveClass(/orbit-animated/);
+  const words = page.locator(".orbit-word");
+  await expect(words).toHaveCount(4);
+  for (let i = 0; i < 4; i++) {
+    await words.nth(i).scrollIntoViewIfNeeded();
+    const box = await words.nth(i).evaluate((e) =>
+      e.getBoundingClientRect().toJSON(),
+    );
+    expect(box.left).toBeGreaterThanOrEqual(0);
+    expect(box.right).toBeLessThanOrEqual(390);
+    expect(box.width).toBeGreaterThan(60);
+  }
+  // Cards render as a readable static list, no pin-spacer.
+  await expect(page.locator(".stack-card").first()).toBeVisible();
+  expect(
+    await page.locator(".whatido .pin-spacer").count(),
+  ).toBe(0);
+});
+
+test("technology logo: one 360 turn forward, smooth return to rest", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await skipIntro(page);
+  const card = page.locator(".technology-card").first();
+  const logo = card.locator("img");
+  await card.scrollIntoViewIfNeeded();
+  await card.hover();
   await expect
     .poll(() => logo.evaluate((e) => (e as HTMLElement).dataset.spinning))
     .toBe("1");
-  const spinning = await logo.evaluate((e) => getComputedStyle(e).transform);
-  expect(spinning).toContain("matrix");
-  // After the controlled tween ends, the logo rests at its original orientation.
+  // Mid-flight the logo is actually rotated.
+  await expect
+    .poll(async () =>
+      logo.evaluate((e) => getComputedStyle(e).transform),
+    )
+    .toContain("matrix");
+  // One turn out plus the return lands inside ~1.15s; rest orientation
+  // is exactly the unrotated state and the guard flag is cleared.
   await expect
     .poll(
       () => logo.evaluate((e) => (e as HTMLElement).dataset.spinning),
@@ -144,268 +576,38 @@ test("technology logo performs exactly two turns per hover entry", async ({
     .toBeUndefined();
   const rested = await logo.evaluate((e) => getComputedStyle(e).transform);
   expect(["none", "matrix(1, 0, 0, 1, 0, 0)"]).toContain(rested);
-});
-test("intro timing, name scramble, rectangle reveal and orbit reversal", async ({
-  page,
-}) => {
-  await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.goto("/");
-  await expect(page.locator(".intro")).toHaveClass(/intro-active/);
-  // Slower readable sequence: the intro must still be present at 2.6s.
-  await page.waitForTimeout(2600);
-  await expect(page.locator(".intro")).toHaveClass(/intro-active/);
-  await page.getByRole("button", { name: "Skip intro" }).click();
-  // Pointer near the name triggers localized scrambling.
-  await page.locator(".name-glyph").nth(2).hover();
-  await expect(page.locator(".scramble-name")).toHaveClass(/is-scrambling/);
-  await expect(page.locator(".hero-rect")).toHaveClass(/is-visible/);
-  // Scramble resolves: original name restores itself.
-  await expect(page.locator(".scramble-name")).not.toHaveClass(/is-scrambling/, {
-    timeout: 6000,
-  });
-  await page.locator(".navbar .brand").hover();
-  await expect(page.locator(".hero-rect")).not.toHaveClass(/is-visible/);
-  expect(
-    await page
-      .locator(".scramble-name .name-visual .name-glyph")
-      .allTextContents(),
-  ).toEqual([..."ABHIRAJJAIN"]);
-  // Work preview follows rows.
-  await page.locator(".work-row").first().hover();
-  await expect(page.locator(".floating-project")).toHaveClass(/is-visible/);
-  await expect(page.locator(".floating-project img")).toHaveAttribute(
-    "src",
-    /niolearn/,
-  );
-  const first = await page
-    .locator(".floating-project")
-    .evaluate((e) => getComputedStyle(e).transform);
-  await page.locator(".work-row").nth(1).hover();
-  await expect(page.locator(".floating-project strong")).toHaveText(
-    "ArbDetector",
-  );
+  // A re-entry spins again (the tween is rebuilt, not stuck).
+  await page.mouse.move(10, 10);
+  await card.hover();
   await expect
-    .poll(() =>
-      page
-        .locator(".floating-project")
-        .evaluate((e) => getComputedStyle(e).transform),
-    )
-    .not.toBe(first);
-  await page.locator("#work h2").hover();
-  await expect(page.locator(".floating-project")).not.toHaveClass(/is-visible/);
-  // Circular sequence: rotation follows scroll and reverses.
-  // Measure from the document top: the pinned element reports a shifted
-  // box while the page is scrolled past its pin range.
-  await page.evaluate(() => scrollTo(0, 0));
-  await page.waitForTimeout(800);
-  const orbitTop = await page
-    .locator(".orbit-section")
-    .evaluate((e) => e.getBoundingClientRect().top + scrollY);
-  const vh = await page.evaluate(() => innerHeight);
-  const ringTransform = () =>
-    page
-      .locator(".orbit-ring")
-      .evaluate((e) => getComputedStyle(e).transform);
-  await page.evaluate(([t, h]) => scrollTo(0, t + h * 1.3), [orbitTop, vh]);
-  await page.waitForTimeout(900);
-  const mid = await ringTransform();
-  expect(mid).toContain("matrix");
-  await page.evaluate(([t, h]) => scrollTo(0, t + h * 2.1), [orbitTop, vh]);
-  await page.waitForTimeout(900);
-  expect(await ringTransform()).not.toBe(mid);
-  await page.evaluate(() => scrollTo(0, 0));
-  await page.waitForTimeout(1200);
-  const reset = await ringTransform();
-  expect(["none", "matrix(1, 0, 0, 1, 0, 0)"]).toContain(reset);
-  await page.reload();
-  await expect(page.locator(".intro")).not.toHaveClass(/intro-active/);
+    .poll(() => logo.evaluate((e) => (e as HTMLElement).dataset.spinning))
+    .toBe("1");
 });
-test("stacking cards overlap on scroll and reverse naturally", async ({
+
+test("floating project preview positions on pointerenter after scroll", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
-  await page.getByRole("button", { name: "Skip intro" }).click();
-  await expect(page.locator(".stack-card")).toHaveCount(4);
-  const top = await page
-    .locator("#expertise")
-    .evaluate((e) => e.getBoundingClientRect().top + scrollY);
-  const vh = await page.evaluate(() => innerHeight);
-  const card2 = page.locator(".stack-card").nth(1);
-  const transform = () =>
-    card2.evaluate((e) => getComputedStyle(e).transform);
-  await page.evaluate(([t, h]) => scrollTo(0, t + h * 0.02), [top, vh]);
-  await page.waitForTimeout(800);
-  const before = await transform();
-  await page.evaluate(([t, h]) => scrollTo(0, t + h * 1.2), [top, vh]);
-  await page.waitForTimeout(800);
-  const mid = await transform();
-  expect(mid).not.toBe(before);
-  // The incoming card has moved up toward its stacked position.
-  const ty = (m: string) => {
-    const parts = m.match(/matrix\((.+)\)/);
-    return parts ? parseFloat(parts[1].split(",")[5]) : 0;
-  };
-  expect(Math.abs(ty(mid))).toBeLessThan(Math.abs(ty(before)));
-  // Scrolling back returns the card toward its waiting position.
-  await page.evaluate(([t, h]) => scrollTo(0, t + h * 0.02), [top, vh]);
-  await page.waitForTimeout(900);
-  expect(await transform()).not.toBe(mid);
-});
-test("about paragraphs reveal word by word with scroll", async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto("/");
-  await page.getByRole("button", { name: "Skip intro" }).click();
-  const words = page.locator(".wr-word");
-  expect(await words.count()).toBeGreaterThan(60);
-  const aboutTop = await page
-    .locator("#about")
-    .evaluate((e) => e.getBoundingClientRect().top + scrollY);
-  await page.evaluate((t) => scrollTo(0, t - innerHeight * 0.5), aboutTop);
-  await page.waitForTimeout(700);
-  const early = await words.evaluateAll((els) =>
-    els.filter((e) => parseFloat(getComputedStyle(e).opacity) > 0.9).length,
+  await skipIntro(page);
+  // Park the cursor where the first work row will land, then scroll the row
+  // under the stationary cursor: pointerenter fires without pointermove.
+  await page.mouse.move(700, 300);
+  const row = page.locator(".work-row").first();
+  await row.scrollIntoViewIfNeeded();
+  await jumpTo(
+    page,
+    (await row.evaluate(
+      (e) => e.getBoundingClientRect().top + window.scrollY - 260,
+    )) as number,
   );
-  expect(early).toBeLessThan(await words.count());
-  const aboutBottom = await page
-    .locator("#about")
-    .evaluate((e) => e.getBoundingClientRect().top + scrollY + e.scrollHeight);
-  await page.evaluate((b) => scrollTo(0, b), aboutBottom);
-  await page.waitForTimeout(900);
-  const late = await words.evaluateAll((els) =>
-    els.filter((e) => parseFloat(getComputedStyle(e).opacity) > 0.9).length,
+  await page.waitForTimeout(400);
+  const preview = page.locator(".floating-project");
+  await expect(preview).toHaveClass(/is-visible/);
+  const box = await preview.evaluate((e) =>
+    e.getBoundingClientRect().toJSON(),
   );
-  expect(late).toBe(await words.count());
-  // Scrolling backward reverses the emphasis.
-  await page.evaluate((t) => scrollTo(0, t - innerHeight * 0.5), aboutTop);
-  await page.waitForTimeout(900);
-  const reversed = await words.evaluateAll((els) =>
-    els.filter((e) => parseFloat(getComputedStyle(e).opacity) > 0.9).length,
-  );
-  expect(reversed).toBeLessThan(late);
-});
-test("academic-journey timeline renders and animates on scroll", async ({
-  page,
-}) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto("/");
-  await page.getByRole("button", { name: "Skip intro" }).click();
-  await expect(page.locator(".timeline-card")).toHaveCount(5);
-  await expect(page.locator(".timeline-card").last()).toContainText(
-    "Vedam School of Technology",
-  );
-  await expect(page.locator(".timeline-card").last()).toContainText(
-    "CGPA 8.95 / 10",
-  );
-  const lineScale = () =>
-    page
-      .locator(".timeline-line i")
-      .evaluate((e) => getComputedStyle(e).transform);
-  const top = await page
-    .locator("#leadership")
-    .evaluate((e) => e.getBoundingClientRect().top + scrollY);
-  await page.evaluate((t) => scrollTo(0, t - innerHeight * 0.3), top);
-  await page.waitForTimeout(700);
-  const early = await lineScale();
-  await page.evaluate((t) => scrollTo(0, t + innerHeight * 1.2), top);
-  await page.waitForTimeout(900);
-  const later = await lineScale();
-  expect(later).not.toBe(early);
-});
-test("reduced motion and touch fallback", async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/");
-  await expect(page.locator(".intro")).toBeHidden();
-  await expect(page.locator(".hero-rect")).toBeHidden();
-  await expect(page.locator(".mobile-project-preview").first()).toBeVisible();
-  await expect(page.locator(".stack-card")).toHaveCount(4);
-  await expect(page.locator(".orbit-word")).toHaveCount(3);
-  await page.locator(".work-row").first().click();
-  await expect(page).toHaveURL(/projects\/niolearn/);
-  await page.goBack();
-  await expect(page.locator(".work-row")).toHaveCount(5);
-});
-test("section screenshots at four review viewports", async ({ page }, info) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  for (const [width, height] of [
-    [375, 812],
-    [390, 844],
-    [768, 1024],
-    [1440, 900],
-    [1920, 1080],
-  ]) {
-    await page.setViewportSize({ width, height });
-    await page.goto("/");
-    await page.screenshot({
-      path: `docs/screenshots/${info.project.name}-${width}-hero.png`,
-    });
-    for (const id of [
-      "about",
-      "expertise",
-      "work",
-      "tech-stack",
-      "leadership",
-      "experience",
-      "contact",
-    ]) {
-      await page
-        .locator("#" + id)
-        .evaluate((e) => e.scrollIntoView({ block: "start" }));
-      await expect
-        .poll(() =>
-          page.evaluate(() =>
-            [...document.images]
-              .filter((i) => {
-                const r = i.getBoundingClientRect();
-                return r.width > 0 && r.bottom > 0 && r.top < innerHeight;
-              })
-              .every((i) => i.complete && i.naturalWidth > 0),
-          ),
-        )
-        .toBeTruthy();
-      await page.screenshot({
-        path: `docs/screenshots/${info.project.name}-${width}-${id}.png`,
-      });
-    }
-  }
-});
-test("3.0 editorial sections, full-screen menu trap, stable refresh and quick preview switches", async ({
-  page,
-}) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto("/");
-  await page.getByRole("button", { name: "Skip intro" }).click();
-  await expect(page.locator(".stack-card")).toHaveCount(4);
-  await expect(page.locator(".scramble-name .last-name")).toHaveText("JAIN");
-  await expect(page.locator("canvas.hero-field")).toBeVisible();
-  const b = page.locator(".menu-toggle");
-  await b.click();
-  await expect(page.locator("main")).toHaveAttribute("inert", "");
-  await page.keyboard.press("Shift+Tab");
-  await expect(page.locator(".nav-resume")).toBeFocused();
-  await page.keyboard.press("Tab");
-  await expect(b).toBeFocused();
-  await page.keyboard.press("Escape");
-  await expect(b).toBeFocused();
-  await expect(page.locator("main")).not.toHaveAttribute("inert");
-  for (let i = 0; i < 10; i++)
-    await page
-      .locator(".work-row")
-      .nth(i % 5)
-      .hover();
-  await expect(page.locator(".floating-project strong")).toHaveText("Fnatics");
-  await page.locator("#work h2").hover();
-  await expect(page.locator(".floating-project")).not.toHaveClass(/is-visible/);
-  await page.locator("#expertise").scrollIntoViewIfNeeded();
-  await page.reload();
-  await expect(page.locator("#expertise")).toBeVisible();
-  await page.setViewportSize({ width: 1280, height: 900 });
-  // ScrollTrigger re-measures pinned sections on a debounced resize refresh.
-  await page.waitForTimeout(800);
-  expect(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= innerWidth,
-    ),
-  ).toBeTruthy();
+  expect(box.left).toBeGreaterThanOrEqual(0);
+  expect(box.right).toBeLessThanOrEqual(1440);
+  expect(box.top).toBeGreaterThanOrEqual(0);
 });

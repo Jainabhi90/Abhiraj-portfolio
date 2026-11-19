@@ -1,50 +1,77 @@
 import Image from "next/image";
 import Link from "next/link";
 import { profile, Project } from "@/content/portfolio";
-import { CopyEmail, HeroField } from "./Interactions";
-import { ScrambleName, WordReveal } from "./Motion";
+import { CopyEmail } from "./Interactions";
+import { SocialLinks } from "./SocialLinks";
+import { ScrambleName, ScrambleText, WordReveal } from "./Motion";
 
 export function Hero() {
   return (
     <section className="hero" aria-label="Introduction">
-      <HeroField />
       <div className="hero-top mono">
-        <span>SOFTWARE ENGINEER / PRODUCT BUILDER</span>
-        <span>PUNE, INDIA</span>
+        <span>
+          <i className="status-dot" aria-hidden="true" /> ENGINEERING × PRODUCT
+        </span>
+        <span>PORTFOLIO / 2026</span>
       </div>
-      <ScrambleName />
-      <p className="hero-subtitle">
-        Software Engineer building products where{" "}
-        <em>thoughtful architecture</em> and exceptional user experiences meet.
-      </p>
-      <div className="hero-bottom">
-        <div className="hero-specialties mono">
-          <span>FULL-STACK PRODUCTS</span>
-          <span>FRONTEND ENGINEERING</span>
-          <span>BACKEND & APIs</span>
+      <div className="hero-center">
+        <ScrambleName />
+        <p className="hero-tagline">
+          <span className="sr-only">
+            Building real products from idea to production.
+          </span>
+          <ScrambleText text="Building" /> <ScrambleText text="real" />{" "}
+          <ScrambleText text="products" />
+          <br />
+          <ScrambleText text="from" />{" "}
+          <em>
+            <ScrambleText text="idea" />
+          </em>{" "}
+          <ScrambleText text="to" /> <ScrambleText text="production." />
+        </p>
+        <div className="hero-side mono">
+          <ScrambleText text="SOFTWARE ENGINEER" className="hero-role" />
+          <span className="hero-accent">CO-FOUNDER & CTO / NIOLEARN</span>
         </div>
-        <div className="hero-actions">
+        <div className="hero-cta">
+          <a href="#work" className="cta-pill">
+            View selected work <span aria-hidden="true">↘</span>
+          </a>
           <a
             href={profile.resume}
-            className="hero-resume"
+            className="cta-text"
             target="_blank"
             rel="noopener noreferrer"
           >
-            View Resume <span>↗</span>
-          </a>
-          <a href="#contact" className="hero-contact">
-            Contact Me <span>↗</span>
+            Download résumé <span aria-hidden="true">↗</span>
           </a>
         </div>
+        <div className="hero-meta mono">
+          <a
+            className="hero-pill hero-pill-lead"
+            href="https://niolearn.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            CO-FOUNDER & CTO · <span className="hero-accent">NIOLEARN</span>{" "}
+            <span aria-hidden="true">↗</span>
+          </a>
+          <span className="hero-pill">
+            B.TECH AI & ML · <span className="hero-accent">VEDAM × ADYPU</span>
+          </span>
+          <SocialLinks items={["github", "linkedin", "email"]} />
+        </div>
       </div>
-      <div className="hero-social mono">
-        <a href={profile.github}>GITHUB</a>
-        <a href={profile.linkedin}>LINKEDIN</a>
-        <a href={`mailto:${profile.email}`}>EMAIL</a>
-      </div>
-      <div className="hero-foot mono">
-        <span>CO-FOUNDER & CTO / NIOLEARN</span>
-        <a href="#work">SCROLL TO EXPLORE ↓</a>
+      <div className="hero-bottom mono">
+        <a href={profile.github}>
+          GITHUB <span aria-hidden="true">↗</span>
+        </a>
+        <a href={profile.linkedin}>
+          LINKEDIN <span aria-hidden="true">↗</span>
+        </a>
+        <a href="#contact">
+          CONTACT <span aria-hidden="true">↗</span>
+        </a>
       </div>
     </section>
   );
@@ -75,8 +102,8 @@ export function WhoAmI() {
           <svg viewBox="0 0 400 400" role="presentation">
             <defs>
               <linearGradient id="wv-line" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stopColor="#35d4a0" stopOpacity="0.9" />
-                <stop offset="1" stopColor="#b9f46b" stopOpacity="0.35" />
+                <stop offset="0" stopColor="#217e61" stopOpacity="0.85" />
+                <stop offset="1" stopColor="#2bcb98" stopOpacity="0.3" />
               </linearGradient>
             </defs>
             <rect
@@ -85,7 +112,7 @@ export function WhoAmI() {
               width="280"
               height="280"
               fill="none"
-              stroke="#26302b"
+              stroke="#cdd5cd"
               strokeWidth="1"
             />
             <rect
@@ -103,17 +130,17 @@ export function WhoAmI() {
               cy="200"
               r="58"
               fill="none"
-              stroke="#35d4a0"
-              strokeOpacity="0.55"
+              stroke="#217e61"
+              strokeOpacity="0.5"
               strokeWidth="1"
             />
-            <circle cx="200" cy="200" r="4" fill="#b9f46b" />
+            <circle cx="200" cy="200" r="4" fill="#2bcb98" />
             <line
               x1="200"
               y1="20"
               x2="200"
               y2="60"
-              stroke="#26302b"
+              stroke="#cdd5cd"
               strokeWidth="1"
             />
             <line
@@ -121,7 +148,7 @@ export function WhoAmI() {
               y1="340"
               x2="200"
               y2="380"
-              stroke="#26302b"
+              stroke="#cdd5cd"
               strokeWidth="1"
             />
             <line
@@ -129,7 +156,7 @@ export function WhoAmI() {
               y1="200"
               x2="60"
               y2="200"
-              stroke="#26302b"
+              stroke="#cdd5cd"
               strokeWidth="1"
             />
             <line
@@ -137,7 +164,7 @@ export function WhoAmI() {
               y1="200"
               x2="380"
               y2="200"
-              stroke="#26302b"
+              stroke="#cdd5cd"
               strokeWidth="1"
             />
           </svg>
@@ -159,7 +186,7 @@ export function ProjectVisual({ project }: { project: Project }) {
           src={project.image}
           alt={`${project.name} live project homepage, captured November 2026`}
           width={1440}
-          height={project.slug === "niolearn" ? 900 : 1000}
+          height={900}
           sizes="(max-width: 768px) 100vw, 85vw"
         />
         <figcaption className="media-label mono">
@@ -172,7 +199,7 @@ export function ProjectVisual({ project }: { project: Project }) {
       className={`project-media project-graphic graphic-${project.slug}`}
       aria-label={`${project.name} editorial project graphic, not a product screenshot`}
     >
-      <span className="mono graphic-top">PRODUCT & ENGINEERING</span>
+      <span className="mono graphic-top">EDITORIAL PROJECT GRAPHIC</span>
       <span className="graphic-word">{project.name}</span>
       <div className="graphic-lines" aria-hidden="true">
         <i />
@@ -182,7 +209,7 @@ export function ProjectVisual({ project }: { project: Project }) {
       </div>
       <div className="graphic-bottom mono">
         <span>{project.kind}</span>
-        <span>{project.status}</span>
+        <span>NOT A PRODUCT SCREENSHOT</span>
       </div>
     </div>
   );
@@ -192,7 +219,7 @@ export function Experience() {
   return (
     <section id="experience" className="section experience">
       <div className="section-top mono">
-        <span>06 / EXPERIENCE</span>
+        <span>02 / EXPERIENCE</span>
         <span>BUILD. TEST. ITERATE.</span>
       </div>
       <h2 className="section-title" data-reveal>
@@ -233,11 +260,75 @@ export function Experience() {
   );
 }
 
+const PRESENCE_CARDS = [
+  {
+    label: "GITHUB",
+    title: "@Jainabhi90",
+    copy: "Code, experiments, and everything I ship.",
+    href: profile.github,
+  },
+  {
+    label: "LINKEDIN",
+    title: "Abhiraj Jain",
+    copy: "Roles, milestones, and the professional trail.",
+    href: profile.linkedin,
+  },
+  {
+    label: "PRODUCT",
+    title: "NioLearn",
+    copy: "The admissions platform I build as Co-Founder & CTO.",
+    href: "https://niolearn.com/",
+  },
+  {
+    label: "EMAIL",
+    title: "jainabhi90980@gmail.com",
+    copy: "Direct line for opportunities and collaborations.",
+    href: `mailto:${profile.email}`,
+    small: true,
+  },
+];
+
+export function OnlinePresence() {
+  return (
+    <section id="presence" className="presence section">
+      <div className="section-top mono">
+        <span>08 / ONLINE PRESENCE</span>
+        <span>FIND ME ONLINE</span>
+      </div>
+      <h2 className="section-title" data-reveal>
+        Everywhere I <em>build.</em>
+      </h2>
+      <div className="presence-grid">
+        {PRESENCE_CARDS.map((c) => (
+          <a
+            key={c.label}
+            className="presence-card"
+            href={c.href}
+            target={c.href.startsWith("mailto:") ? undefined : "_blank"}
+            rel="noopener noreferrer"
+            data-reveal
+          >
+            <span className="mono presence-card-label">
+              {c.label} <span aria-hidden="true">↗</span>
+            </span>
+            <span
+              className={`presence-card-title ${c.small ? "presence-card-title--sm" : ""}`}
+            >
+              {c.title}
+            </span>
+            <span className="presence-card-copy">{c.copy}</span>
+          </a>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export function Contact() {
   return (
     <footer id="contact" className="contact section">
       <div className="section-top mono">
-        <span>07 / YOUR NEXT IDEA STARTS HERE</span>
+        <span>09 / YOUR NEXT IDEA STARTS HERE</span>
         <span>
           <i className="status-dot" /> LET&apos;S TALK
         </span>
@@ -257,6 +348,8 @@ export function Contact() {
           Open to software engineering opportunities,
           <br />
           interesting products, and meaningful collaborations.
+          <br />
+          <span className="contact-loc mono">PUNE, INDIA · WORKING WORLDWIDE</span>
         </p>
         <div>
           <a className="email-link" href={`mailto:${profile.email}`}>
@@ -268,11 +361,7 @@ export function Contact() {
       <div className="footer-bottom mono">
         <span>© 2026 ABHIRAJ JAIN</span>
         <div>
-          <a href={profile.github}>GITHUB ↗</a>
-          <a href={profile.linkedin}>LINKEDIN ↗</a>
-          <a href={profile.resume} target="_blank" rel="noopener noreferrer">
-            RÉSUMÉ ↗
-          </a>
+          <SocialLinks items={["github", "linkedin", "resume"]} />
         </div>
         <a href="#top">BACK TO TOP ↑</a>
       </div>

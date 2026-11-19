@@ -3,8 +3,12 @@ import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { projects } from "@/content/portfolio";
 import { techGroups } from "@/content/technologies";
+
+gsap.registerPlugin(ScrollTrigger);
+
 export function WorkList() {
   const [active, setActive] = useState<number | null>(null);
   const preview = useRef<HTMLDivElement>(null);
@@ -53,7 +57,13 @@ export function WorkList() {
               href={`/projects/${p.slug}`}
               className="work-row"
               onPointerEnter={(e) => {
-                if (e.pointerType !== "touch") setActive(i);
+                if (e.pointerType === "touch") return;
+                if (preview.current)
+                  gsap.set(preview.current, {
+                    x: Math.max(20, Math.min(innerWidth - 420, e.clientX - 200)),
+                    y: Math.max(20, Math.min(innerHeight - 300, e.clientY - 125)),
+                  });
+                setActive(i);
               }}
               onFocus={(e) => {
                 const r = e.currentTarget.getBoundingClientRect();
@@ -82,9 +92,9 @@ export function WorkList() {
                 {p.image ? (
                   <Image
                     src={p.image}
-                    alt={`${p.name} project homepage`}
+                    alt={`${p.name} live project homepage, captured November 2026`}
                     width={720}
-                    height={p.slug === "niolearn" ? 450 : 500}
+                    height={450}
                     sizes="(max-width:767px) 90vw,400px"
                   />
                 ) : (
@@ -107,7 +117,7 @@ export function WorkList() {
                 src={project.image}
                 alt=""
                 width={720}
-                height={project.slug === "niolearn" ? 450 : 500}
+                height={450}
                 sizes="(max-width:767px) 90vw,400px"
               />
             ) : (
@@ -124,10 +134,13 @@ export function WorkList() {
     </section>
   );
 }
+
 export function TechStack() {
   const [selected, setSelected] = useState("All Categories");
   const logos = useRef(new Map<string, HTMLElement>());
-  // Exactly two full turns (720°) per hover entrance, then back to rest.
+
+  /* One forward turn (0° → 360°), then a smooth return to rest
+     (360° → 0°). ~1.0s total. Rapid re-entry restarts cleanly. */
   const spin = (name: string, pointerType: string) => {
     if (
       pointerType === "touch" ||
@@ -137,26 +150,43 @@ export function TechStack() {
     const img = logos.current.get(name);
     if (!img) return;
     img.dataset.spinning = "1";
-    gsap.fromTo(
-      img,
-      { rotation: 0 },
-      {
-        rotation: 720,
-        duration: 1.05,
-        ease: "power2.inOut",
-        overwrite: true,
+    gsap.killTweensOf(img);
+    gsap
+      .timeline({
         onComplete: () => {
           gsap.set(img, { rotation: 0 });
           delete img.dataset.spinning;
         },
-      },
-    );
+      })
+      .fromTo(
+        img,
+        { rotation: 0 },
+        { rotation: 360, duration: 0.58, ease: "power2.inOut" },
+      )
+      .to(img, { rotation: 0, duration: 0.42, ease: "power2.out" });
   };
+
   const groups =
     selected === "All Categories"
       ? techGroups
       : techGroups.filter((g) => g.name === selected);
   const count = groups.reduce((sum, g) => sum + g.items.length, 0);
+
+  /* Filtering changes this section's height. Wait for React to commit
+     and the layout to settle, then refresh every ScrollTrigger so
+     downstream sections (journey, experience, contact) can never stay
+     hidden behind stale trigger positions. */
+  useEffect(() => {
+    let raf2 = 0;
+    const raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => ScrollTrigger.refresh());
+    });
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+    };
+  }, [selected]);
+
   return (
     <section id="tech-stack" className="tech-section section">
       <div className="reference-inner">

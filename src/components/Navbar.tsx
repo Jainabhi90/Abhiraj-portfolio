@@ -56,7 +56,7 @@ export default function Navbar() {
         aria-label="Abhiraj Jain home"
         onClick={() => setOpen(false)}
       >
-        Abhiraj<span>.</span>
+        AJ<span>.</span>
       </Link>
       <a
         className="nav-direct-resume mono"

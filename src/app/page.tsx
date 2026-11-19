@@ -1,4 +1,4 @@
-import { Hero, WhoAmI, Experience, Contact } from "@/components/Sections";
+import { Hero, WhoAmI, Experience, OnlinePresence, Contact } from "@/components/Sections";
 import { WorkList, TechStack } from "@/components/CorrectedSections";
 import { WhatIDo, Orbit, Journey } from "@/components/Motion";
 export default function Home() {
@@ -6,12 +6,13 @@ export default function Home() {
     <>
       <Hero />
       <WhoAmI />
+      <Experience />
       <WhatIDo />
       <Orbit />
       <WorkList />
       <TechStack />
       <Journey />
-      <Experience />
+      <OnlinePresence />
       <Contact />
     </>
   );
