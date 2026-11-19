@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { profile, Project } from "@/content/portfolio";
 import { CopyEmail } from "./Interactions";
+import { SocialLinks } from "./SocialLinks";
 import { ScrambleName, ScrambleText, WordReveal } from "./Motion";
 
 export function Hero() {
@@ -43,15 +44,7 @@ export function Hero() {
             CO-FOUNDER & CTO · NIOLEARN <span aria-hidden="true">↗</span>
           </a>
           <span className="hero-pill">B.TECH AI & ML · VEDAM × ADYPU</span>
-          <span className="hero-socials">
-            <a href={profile.github} target="_blank" rel="noopener noreferrer">
-              GITHUB ↗
-            </a>
-            <a href={profile.linkedin} target="_blank" rel="noopener noreferrer">
-              LINKEDIN ↗
-            </a>
-            <a href={`mailto:${profile.email}`}>EMAIL ↗</a>
-          </span>
+          <SocialLinks items={["github", "linkedin", "email"]} />
         </div>
       </div>
       <div className="hero-side mono">
@@ -278,7 +271,7 @@ const PRESENCE_CARDS = [
   {
     label: "EMAIL",
     title: "jainabhi90980@gmail.com",
-    copy: "Fastest way to reach me — I reply quickly.",
+    copy: "Direct line for opportunities and collaborations.",
     href: `mailto:${profile.email}`,
     small: true,
   },
@@ -357,11 +350,7 @@ export function Contact() {
       <div className="footer-bottom mono">
         <span>© 2026 ABHIRAJ JAIN</span>
         <div>
-          <a href={profile.github}>GITHUB ↗</a>
-          <a href={profile.linkedin}>LINKEDIN ↗</a>
-          <a href={profile.resume} target="_blank" rel="noopener noreferrer">
-            RÉSUMÉ ↗
-          </a>
+          <SocialLinks items={["github", "linkedin", "resume"]} />
         </div>
         <a href="#top">BACK TO TOP ↑</a>
       </div>
