@@ -666,7 +666,7 @@ export function Journey() {
           </p>
         </div>
         <div>
-          <strong>94%</strong>
+          <strong>~94%</strong>
           <p>Class 12 CBSE</p>
         </div>
         <div>
