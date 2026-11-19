@@ -263,44 +263,58 @@ export function WhatIDo() {
         );
         if (cards.length < 2 || !pinEl) return;
 
-        /* Geometry: the strip each covered card leaves visible. Waiting
-           cards sit just past the pinned container's bottom edge, which
-           is offscreen, and slide up over the stack. */
-        const strip = () =>
-          Math.max(12, Math.min(24, Math.round(window.innerHeight * 0.022)));
-        const place = () => {
-          const s = strip();
-          const base = pinEl.clientHeight;
-          cards.forEach((c, i) => {
-            gsap.set(c, {
-              y: i === 0 ? 0 : base + i * s,
-              zIndex: i + 1,
-            });
-          });
+        /* Geometry: each covered card leaves its number row and heading
+           visible. The offset is measured from the first card so the
+           whole heading block (padding, index row, title) stays on
+           screen at any viewport. Waiting cards sit just past the pinned
+           container's bottom edge, which is offscreen, and slide up over
+           the stack. */
+        const headerOff = () => {
+          const first = cards[0];
+          const h3 = first.querySelector("h3");
+          const base = h3 ? h3.offsetTop + h3.offsetHeight : 96;
+          return Math.round(base + 10);
         };
-        place();
-        const ro = new ResizeObserver(place);
-        ro.observe(pinEl);
-
         const tl = gsap.timeline({
           defaults: { ease: "none" },
           scrollTrigger: {
             trigger: pinEl,
             pin: true,
             start: "top top",
-            end: () => "+=" + Math.round(window.innerHeight * 1.7),
+            end: () => "+=" + Math.round(window.innerHeight * 2.3),
             scrub: 0.5,
             anticipatePin: 1,
             invalidateOnRefresh: true,
-            onRefresh: place,
           },
         });
+        cards.forEach((c, i) => gsap.set(c, { zIndex: i + 1 }));
         for (let i = 1; i < cards.length; i++) {
           const at = i - 1;
-          tl.to(cards[i], { y: () => i * strip(), duration: 1 }, at);
+          tl.fromTo(
+            cards[i],
+            { y: () => pinEl.clientHeight + i * headerOff() },
+            { y: () => i * headerOff(), duration: 1, immediateRender: false },
+            at,
+          );
         }
+        /* Tail: the whole stack shrinks and fades while the forest
+           orbit panel rises into the same viewport over it. */
+        const head = root.current?.querySelector(".whatido-head");
+        const sectionTop = root.current?.querySelector(
+          ".whatido-pin .section-top",
+        );
+        tl.to(
+          [sectionTop, head, area].filter(Boolean),
+          {
+            scale: 0.55,
+            opacity: 0.15,
+            y: -30,
+            transformOrigin: "50% 35%",
+            duration: 1,
+          },
+          cards.length - 1,
+        );
         return () => {
-          ro.disconnect();
           tl.scrollTrigger?.kill();
           area?.classList.remove("stack-animated");
         };
@@ -337,7 +351,7 @@ export function WhatIDo() {
     >
       <div className="whatido-pin">
         <div className="section-top mono">
-          <span>02 / WHAT I DO</span>
+          <span>03 / WHAT I DO</span>
           <span>FROM INTERFACE TO INFRASTRUCTURE</span>
         </div>
         <div className="whatido-head">
@@ -383,9 +397,9 @@ export function WhatIDo() {
 /* the upper arc is the active reading area. Compact scroll distance.  */
 /* ------------------------------------------------------------------ */
 
-const ORBIT_WORDS = ["ANALYZE", "DESIGN", "BUILD"];
+const ORBIT_WORDS = ["ANALYZE", "DESIGN", "BUILD", "DELIVER"];
 const ORBIT_STEP_DEG = 26; // angular spacing between word centers
-const ORBIT_DOTS = [13, -13, 39, -39, 65]; // small dots along the arc
+const ORBIT_DOTS = [13, -13, 39, -39, 65, -65, 91]; // small dots along the arc
 
 export function Orbit() {
   const root = useRef<HTMLElement>(null);
@@ -421,7 +435,7 @@ export function Orbit() {
             scrollTrigger: {
               trigger: root.current,
               start: "top top",
-              end: () => "+=" + Math.round(window.innerHeight * 1.6),
+              end: () => "+=" + Math.round(window.innerHeight * 2.1),
               scrub: 0.55,
               pin: true,
               anticipatePin: 1,
@@ -443,11 +457,11 @@ export function Orbit() {
     <section
       ref={root}
       className="orbit-section"
-      aria-label="How I think: analyze, design, build"
+      aria-label="How I think: analyze, design, build, deliver"
     >
       <div className="orbit-stage">
         <div className="orbit-caption mono">
-          <span>03 / HOW I THINK</span>
+          <span>04 / HOW I THINK</span>
           <span>PROCESS</span>
         </div>
         <div className="orbit-wheel" aria-hidden="true">
@@ -470,7 +484,7 @@ export function Orbit() {
             </span>
           ))}
         </div>
-        <h2 className="sr-only">Analyze, Design, Build</h2>
+        <h2 className="sr-only">Analyze, Design, Build, Deliver</h2>
       </div>
     </section>
   );
@@ -549,7 +563,7 @@ export function Journey() {
       aria-label="Leadership and academic journey"
     >
       <div className="section-top mono">
-        <span>05 / BEYOND THE CODE</span>
+        <span>07 / BEYOND THE CODE</span>
         <span>PEOPLE & PRACTICE</span>
       </div>
       <h2 className="reference-heading">
@@ -602,6 +616,14 @@ export function Journey() {
         <div>
           <strong>91.56</strong>
           <p>JEE percentile</p>
+        </div>
+        <div>
+          <strong>97.6%</strong>
+          <p>
+            Class 10 CBSE
+            <br />
+            school topper
+          </p>
         </div>
       </div>
       <p className="workshop mono">ALSO / COMPLETED THE BE10X AI TOOLS WORKSHOP</p>
