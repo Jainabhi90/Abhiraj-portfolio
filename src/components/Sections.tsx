@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { profile, Project } from "@/content/portfolio";
-import { CopyEmail } from "./Interactions";
+
 import { SocialLinks } from "./SocialLinks";
 import { KickTrack, ScrambleName, ScrambleText, WordReveal } from "./Motion";
 
@@ -270,6 +270,32 @@ export function OnlinePresence() {
   );
 }
 
+export function Marquee() {
+  const words = [
+    "LET'S BUILD SOMETHING REAL",
+    "OPEN TO OPPORTUNITIES",
+    "AVAILABLE FOR WORK",
+    "PUNE · WORKING WORLDWIDE",
+  ];
+  const seq = [...words, ...words, ...words];
+  return (
+    <div className="marquee" aria-hidden="true">
+      <div className="marquee-track mono">
+        {[0, 1].map((half) => (
+          <div className="marquee-half" key={half}>
+            {seq.map((w, i) => (
+              <span className="marquee-item" key={i}>
+                <i className="marquee-dot" />
+                {w}
+              </span>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function Contact() {
   return (
     <footer id="contact" className="contact section">
@@ -289,13 +315,14 @@ export function Contact() {
           ↗
         </span>
       </h2>
-      {/* Kick cheering the call-to-action, sticker-style on the dark panel. */}
+      {/* Large Kick artwork anchoring the right of the dark panel
+          (owner pick: a bigger piece in place of the small sticker). */}
       <img
         className="contact-kick"
-        src="/images/kick/kick-character.png"
+        src="/images/kick/kick-contact.jpg"
         alt=""
-        width={150}
-        height={255}
+        width={514}
+        height={556}
         aria-hidden="true"
       />
       <div className="contact-bottom">
@@ -306,12 +333,9 @@ export function Contact() {
           <br />
           <span className="contact-loc mono">PUNE, INDIA · WORKING WORLDWIDE</span>
         </p>
-        <div>
-          <a className="email-link" href={`mailto:${profile.email}`}>
-            {profile.email} ↗
-          </a>
-          <CopyEmail email={profile.email} />
-        </div>
+        <a className="email-link" href={`mailto:${profile.email}`}>
+          {profile.email} ↗
+        </a>
       </div>
       <div className="footer-bottom mono">
         <span>© 2026 ABHIRAJ JAIN</span>
