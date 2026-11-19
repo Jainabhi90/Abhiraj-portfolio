@@ -275,6 +275,22 @@ export function WhatIDo() {
           const base = h3 ? h3.offsetTop + h3.offsetHeight : 96;
           return Math.round(base + 10);
         };
+        /* Fit the card height so the last card's full content stays
+           inside the viewport at rest: pin padding, section header and
+           three covered heading rows all consume vertical space, and the
+           CSS default card height can overflow on shorter viewports. */
+        const fitCardHeight = () => {
+          if (!area) return;
+          const areaTop =
+            area.getBoundingClientRect().top -
+            pinEl.getBoundingClientRect().top;
+          const available =
+            window.innerHeight - areaTop - 3 * headerOff() - 24;
+          const current = cards[0].getBoundingClientRect().height;
+          const h = Math.round(Math.max(220, Math.min(current, available)));
+          (area as HTMLElement).style.setProperty("--card-h", `${h}px`);
+        };
+        fitCardHeight();
         const tl = gsap.timeline({
           defaults: { ease: "none" },
           scrollTrigger: {
@@ -321,7 +337,7 @@ export function WhatIDo() {
           scrollTrigger: orbitSection
             ? {
                 trigger: orbitSection,
-                start: "top bottom",
+                start: "top bottom-=60",
                 end: "top top",
                 scrub: 0.5,
                 invalidateOnRefresh: true,
