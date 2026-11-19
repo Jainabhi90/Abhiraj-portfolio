@@ -17,9 +17,17 @@ export function Hero() {
       <div className="hero-center">
         <ScrambleName />
         <p className="hero-tagline">
-          Building real products
+          <span className="sr-only">
+            Building real products from idea to production.
+          </span>
+          <ScrambleText text="Building" /> <ScrambleText text="real" />{" "}
+          <ScrambleText text="products" />
           <br />
-          from <em>idea</em> to production.
+          <ScrambleText text="from" />{" "}
+          <em>
+            <ScrambleText text="idea" />
+          </em>{" "}
+          <ScrambleText text="to" /> <ScrambleText text="production." />
         </p>
         <div className="hero-cta">
           <a href="#work" className="cta-pill">
@@ -41,15 +49,18 @@ export function Hero() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            CO-FOUNDER & CTO · NIOLEARN <span aria-hidden="true">↗</span>
+            CO-FOUNDER & CTO · <span className="hero-accent">NIOLEARN</span>{" "}
+            <span aria-hidden="true">↗</span>
           </a>
-          <span className="hero-pill">B.TECH AI & ML · VEDAM × ADYPU</span>
+          <span className="hero-pill">
+            B.TECH AI & ML · <span className="hero-accent">VEDAM × ADYPU</span>
+          </span>
           <SocialLinks items={["github", "linkedin", "email"]} />
         </div>
       </div>
       <div className="hero-side mono">
         <ScrambleText text="SOFTWARE ENGINEER" className="hero-role" />
-        <span>CO-FOUNDER & CTO / NIOLEARN</span>
+        <span className="hero-accent">CO-FOUNDER & CTO / NIOLEARN</span>
       </div>
       <div className="hero-bottom mono">
         <a href={profile.github}>
