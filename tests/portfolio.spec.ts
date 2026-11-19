@@ -385,6 +385,27 @@ test("fresh-load continuous scroll stacks cards in order, card 1 first", async (
   const body = await card4.locator("p").first().boundingBox();
   expect(body).not.toBeNull();
   expect(body!.y + body!.height).toBeLessThan(768);
+  // Card 4's complete content, including its last bullet, sits inside
+  // the unclipped viewport area and inside the card's own box (no
+  // overflow clipping).
+  const lastBullet = card4.locator("li").last();
+  const lb = await lastBullet.boundingBox();
+  expect(lb).not.toBeNull();
+  expect(lb!.y + lb!.height).toBeLessThan(760);
+  const c4 = await card4.boundingBox();
+  expect(c4).not.toBeNull();
+  expect(lb!.y + lb!.height).toBeLessThanOrEqual(c4!.y + c4!.height - 2);
+  // Not covered either: the topmost element at the last bullet's center
+  // belongs to card 4 (catches the orbit panel masking the stack).
+  const coveredBy = await lastBullet.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    const top = document.elementFromPoint(
+      r.left + r.width / 2,
+      r.top + r.height / 2,
+    );
+    return top ? el.contains(top) || top.contains(el) : false;
+  });
+  expect(coveredBy).toBe(true);
   const scale = await page
     .locator(".stack-area")
     .evaluate((e) => new DOMMatrixReadOnly(getComputedStyle(e).transform).a);
