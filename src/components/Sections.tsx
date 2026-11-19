@@ -33,6 +33,26 @@ export function Hero() {
             Download résumé <span aria-hidden="true">↗</span>
           </a>
         </div>
+        <div className="hero-meta mono">
+          <a
+            className="hero-pill"
+            href="https://niolearn.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            CO-FOUNDER & CTO · NIOLEARN <span aria-hidden="true">↗</span>
+          </a>
+          <span className="hero-pill">B.TECH AI & ML · VEDAM × ADYPU</span>
+          <span className="hero-socials">
+            <a href={profile.github} target="_blank" rel="noopener noreferrer">
+              GITHUB ↗
+            </a>
+            <a href={profile.linkedin} target="_blank" rel="noopener noreferrer">
+              LINKEDIN ↗
+            </a>
+            <a href={`mailto:${profile.email}`}>EMAIL ↗</a>
+          </span>
+        </div>
       </div>
       <div className="hero-side mono">
         <ScrambleText text="SOFTWARE ENGINEER" className="hero-role" />
@@ -195,7 +215,7 @@ export function Experience() {
   return (
     <section id="experience" className="section experience">
       <div className="section-top mono">
-        <span>06 / EXPERIENCE</span>
+        <span>02 / EXPERIENCE</span>
         <span>BUILD. TEST. ITERATE.</span>
       </div>
       <h2 className="section-title" data-reveal>
@@ -236,11 +256,75 @@ export function Experience() {
   );
 }
 
+const PRESENCE_CARDS = [
+  {
+    label: "GITHUB",
+    title: "@Jainabhi90",
+    copy: "Code, experiments, and everything I ship.",
+    href: profile.github,
+  },
+  {
+    label: "LINKEDIN",
+    title: "Abhiraj Jain",
+    copy: "Roles, milestones, and the professional trail.",
+    href: profile.linkedin,
+  },
+  {
+    label: "PRODUCT",
+    title: "NioLearn",
+    copy: "The admissions platform I build as Co-Founder & CTO.",
+    href: "https://niolearn.com/",
+  },
+  {
+    label: "EMAIL",
+    title: "jainabhi90980@gmail.com",
+    copy: "Fastest way to reach me — I reply quickly.",
+    href: `mailto:${profile.email}`,
+    small: true,
+  },
+];
+
+export function OnlinePresence() {
+  return (
+    <section id="presence" className="presence section">
+      <div className="section-top mono">
+        <span>08 / ONLINE PRESENCE</span>
+        <span>FIND ME ONLINE</span>
+      </div>
+      <h2 className="section-title" data-reveal>
+        Everywhere I <em>build.</em>
+      </h2>
+      <div className="presence-grid">
+        {PRESENCE_CARDS.map((c) => (
+          <a
+            key={c.label}
+            className="presence-card"
+            href={c.href}
+            target={c.href.startsWith("mailto:") ? undefined : "_blank"}
+            rel="noopener noreferrer"
+            data-reveal
+          >
+            <span className="mono presence-card-label">
+              {c.label} <span aria-hidden="true">↗</span>
+            </span>
+            <span
+              className={`presence-card-title ${c.small ? "presence-card-title--sm" : ""}`}
+            >
+              {c.title}
+            </span>
+            <span className="presence-card-copy">{c.copy}</span>
+          </a>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export function Contact() {
   return (
     <footer id="contact" className="contact section">
       <div className="section-top mono">
-        <span>07 / YOUR NEXT IDEA STARTS HERE</span>
+        <span>09 / YOUR NEXT IDEA STARTS HERE</span>
         <span>
           <i className="status-dot" /> LET&apos;S TALK
         </span>
@@ -260,6 +344,8 @@ export function Contact() {
           Open to software engineering opportunities,
           <br />
           interesting products, and meaningful collaborations.
+          <br />
+          <span className="contact-loc mono">PUNE, INDIA · WORKING WORLDWIDE</span>
         </p>
         <div>
           <a className="email-link" href={`mailto:${profile.email}`}>
