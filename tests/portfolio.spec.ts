@@ -216,7 +216,7 @@ test("filtering never strands downstream sections (ScrollTrigger refresh)", asyn
   await expect(page.locator(".technology-card")).toHaveCount(25);
 });
 
-test("greeting intro plays on every full load and is skippable", async ({
+test("greeting intro plays once per session and is skippable", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -227,9 +227,11 @@ test("greeting intro plays on every full load and is skippable", async ({
   ).toBeVisible();
   await page.getByRole("button", { name: /skip intro/i }).click();
   await expect(page.locator(".intro")).not.toHaveClass(/intro-active/);
-  // A full reload shows the greeting again (no sessionStorage blanket skip).
+  // A reload in the same tab session does not replay the greeting
+  // (page JS cannot distinguish a hard reload from a normal one).
   await page.reload();
-  await expect(page.locator(".intro")).toHaveClass(/intro-active/);
+  await page.waitForTimeout(1200);
+  await expect(page.locator(".intro")).not.toHaveClass(/intro-active/);
 });
 
 test("per-word scramble: independent words, A-Z0-9 pool, exact restore", async ({
@@ -332,6 +334,47 @@ test("What I Do pinned stack keeps every card heading visible", async ({
     .nth(2)
     .evaluate((e) => getComputedStyle(e).transform);
   expect(lastTransform).toContain("matrix");
+});
+
+test("fresh-load continuous scroll stacks cards in order, card 1 first", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto("/");
+  await skipIntro(page);
+  const pinStart = await page
+    .locator(".whatido-pin")
+    .evaluate((e) => e.getBoundingClientRect().top + window.scrollY);
+  // Walk to the pin in small steps, like a real continuous scroll.
+  for (let y = 0; y <= pinStart + 2; y += 140) {
+    await jumpTo(page, Math.min(y, pinStart + 2));
+  }
+  await page.waitForTimeout(400);
+  const tops = () =>
+    page
+      .locator(".stack-card")
+      .evaluateAll((els) =>
+        els.map((e) => e.getBoundingClientRect().top),
+      );
+  // At pin start only card 1 is in view; cards 2-4 park below the fold.
+  let t = await tops();
+  expect(t[0]).toBeGreaterThan(100);
+  expect(t[0]).toBeLessThan(500);
+  for (let i = 1; i < 4; i++) expect(t[i]).toBeGreaterThanOrEqual(760);
+  // Early progress: card 2 rises in; cards 3 and 4 stay parked.
+  const early = pinStart + Math.round(768 * 1.8 * 0.25);
+  for (let y = pinStart; y <= early; y += 120) await jumpTo(page, y);
+  await page.waitForTimeout(400);
+  t = await tops();
+  expect(t[1]).toBeLessThan(768);
+  expect(t[1]).toBeGreaterThan(t[0]);
+  expect(t[2]).toBeGreaterThanOrEqual(760);
+  expect(t[3]).toBeGreaterThanOrEqual(760);
+  // Reverse to the pin start: card 1 stands alone again.
+  for (let y = early; y >= pinStart; y -= 160) await jumpTo(page, y);
+  await page.waitForTimeout(400);
+  t = await tops();
+  for (let i = 1; i < 4; i++) expect(t[i]).toBeGreaterThanOrEqual(760);
 });
 
 test("What I Do to orbit: stack shrinks into the shared viewport", async ({
