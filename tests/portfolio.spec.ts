@@ -82,8 +82,32 @@ test("responsive layout, cream hero, five works, journey, no excluded content", 
     "href",
     "mailto:jainabhi90980@gmail.com",
   );
-  // Expanded achievements include the Class 10 topper card.
-  await expect(page.locator(".achievements")).toContainText("97.6%");
+  // Stats trimmed to LeetCode, JEE and CGPA only (2026-11-19 user request);
+  // hackathon lives in Beyond the Code, Class 10/12 stats and the ALSO line are gone.
+  const achievements = page.locator(".achievements");
+  await expect(achievements).toContainText("150+");
+  await expect(achievements).toContainText("91.56");
+  await expect(achievements).toContainText("8.95");
+  await expect(achievements).not.toContainText("97.6%");
+  await expect(achievements).not.toContainText("~94%");
+  await expect(achievements).not.toContainText("hackathon");
+  await expect(page.locator(".workshop")).toHaveCount(0);
+  // Presence cards switch to a green background with light text on hover.
+  const firstCard = cards.nth(0);
+  const bgBefore = await firstCard.evaluate(
+    (el) => getComputedStyle(el).backgroundColor,
+  );
+  await firstCard.hover();
+  await expect
+    .poll(
+      () => firstCard.evaluate((el) => getComputedStyle(el).backgroundColor),
+    )
+    .toBe("rgb(33, 126, 97)");
+  expect(bgBefore).not.toBe("rgb(33, 126, 97)");
+  const titleColor = await firstCard
+    .locator(".presence-card-title")
+    .evaluate((el) => getComputedStyle(el).color);
+  expect(titleColor).toBe("rgb(246, 245, 240)");
   expect(errors).toEqual([]);
 });
 
