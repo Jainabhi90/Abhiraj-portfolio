@@ -668,26 +668,12 @@ export function Journey() {
           </p>
         </div>
         <div>
-          <strong>
-            24<em>h</em>
-          </strong>
-          <p>
-            Vedam hackathon
-            <br />
-            Organizer & frontend participant
-          </p>
-        </div>
-        <div>
           <strong>91.56</strong>
           <p>
             JEE Main percentile
             <br />
             qualified JEE Advanced & BITSAT
           </p>
-        </div>
-        <div>
-          <strong>~94%</strong>
-          <p>Class 12 CBSE</p>
         </div>
         <div>
           <strong>8.95</strong>
@@ -697,20 +683,7 @@ export function Journey() {
             current
           </p>
         </div>
-        <div>
-          <strong>97.6%</strong>
-          <p>
-            Class 10 CBSE
-            <br />
-            school topper
-          </p>
-        </div>
       </div>
-      <p className="workshop mono">
-        ALSO / STATE-LEVEL BADMINTON PLAYER · VITEEE RANK 4,570 · COMPLETED
-        THE BE10X AI TOOLS WORKSHOP · BUILDING IN PUBLIC ACROSS THREE PRODUCT
-        IDEAS
-      </p>
     </section>
   );
 }
