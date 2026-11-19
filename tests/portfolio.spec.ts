@@ -502,9 +502,9 @@ test("orbit: shared-center wheel rotates with scroll and exits cleanly", async (
     Math.PI;
   expect(angle).toBeGreaterThan(10);
   expect(angle).toBeLessThan(45);
-  // Completed state (owner direction, Nov 19 2026): DESIGN and BUILD
-  // fully legible inside the viewport while ANALYZE rests half-hidden
-  // past the left edge and DELIVER half-hidden past the right edge.
+  // Completed state (owner direction, Nov 19 2026 - radius slightly
+  // reduced at the owner's request): all four words rest fully inside
+  // the viewport, ANALYZE and DELIVER near the left and right edges.
   await jumpTo(page, orbitTop + Math.round(900 * 1.3) - 80);
   await page.waitForTimeout(500);
   const words = page.locator(".orbit-word");
@@ -522,11 +522,11 @@ test("orbit: shared-center wheel rotates with scroll and exits cleanly", async (
     expect(boxes[i].left).toBeGreaterThanOrEqual(0);
     expect(boxes[i].right).toBeLessThanOrEqual(1440);
   }
-  // Outer words half-hidden: clipped by their edge but still showing.
-  expect(boxes[0].left).toBeLessThan(0);
-  expect(boxes[0].right).toBeGreaterThan(0);
-  expect(boxes[3].right).toBeGreaterThan(1440);
-  expect(boxes[3].left).toBeLessThan(1440);
+  // Outer words rest at their edges, no longer clipped past them.
+  expect(boxes[0].left).toBeGreaterThanOrEqual(-10);
+  expect(boxes[0].left).toBeLessThan(80);
+  expect(boxes[3].right).toBeLessThanOrEqual(1450);
+  expect(boxes[3].right).toBeGreaterThan(1360);
   // Clean exit: scrolling past the pin lands on Selected Works.
   await jumpTo(page, orbitTop + Math.round(900 * 1.3) + 900);
   await expect(page.locator("#work")).toBeInViewport();
