@@ -25,3 +25,5 @@
 .presence-card:hover .presence-card-copy {
   color: rgba(244, 240, 231, 0.82);
 }
+
+/* Redeploy trigger: no visual change. */
