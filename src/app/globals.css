@@ -238,6 +238,85 @@ img {
   }
 }
 
+/* ---------- Section colour curves ---------- */
+
+/* Curved boundary where the page switches surface colour: the new
+   colour enters as a convex arc that flattens straight on scroll.
+   The band keeps a constant height (no layout shift); only the arc
+   flattens, scrubbed by JS via --curve-r (default: fully curved). */
+.section-curve {
+  --curve-r: 100%;
+  height: 150px;
+  background: var(--to);
+  position: relative;
+}
+
+/* Upper section's colour dips down into the lower section (centre lower
+   than the edges), then flattens as the band scrolls up. */
+.section-curve > i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--from);
+  border-radius: 0 0 50% 50% / 0 0 var(--curve-r) var(--curve-r);
+}
+
+@media (max-width: 767px) {
+  .section-curve {
+    height: 90px;
+  }
+}
+
+/* ---------- Marquee strip ---------- */
+
+.marquee {
+  overflow: hidden;
+  background: var(--cream);
+  border-top: 1px solid var(--border);
+  padding: clamp(14px, 2.4vh, 22px) 0;
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 30s linear infinite;
+}
+
+.marquee-half {
+  display: flex;
+}
+
+.marquee-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 30px;
+  padding-right: 30px;
+  white-space: nowrap;
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  color: var(--ink);
+}
+
+.marquee-dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  background: var(--green);
+  transform: rotate(45deg);
+}
+
+@keyframes marquee-scroll {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+}
+
 /* ---------- Custom cursor ---------- */
 
 .cursor {
@@ -249,7 +328,7 @@ img {
   pointer-events: none;
   opacity: 0;
   /* Hotspot on the glove's raised fingertip, not the image corner. */
-  margin: -2px 0 0 -19px;
+  margin: -1px 0 0 -17px;
 }
 
 /* The glove replaces the native arrow everywhere on precise pointers. */
@@ -1399,6 +1478,19 @@ a.hero-pill:hover {
   margin: clamp(40px, 6vh, 64px) auto 0;
 }
 
+/* Kick rides the timeline's middle line with scroll (owner request). */
+.timeline-kick {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 70px;
+  height: auto;
+  transform: translate(-50%, -88%);
+  z-index: 3;
+  pointer-events: none;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.18));
+}
+
 .timeline-line {
   position: absolute;
   top: 0;
@@ -1690,11 +1782,13 @@ a.hero-pill:hover {
 .contact-kick {
   position: absolute;
   right: calc(var(--pad) + 1vw);
-  bottom: clamp(240px, 36vh, 360px);
-  width: clamp(180px, 16vw, 260px);
+  bottom: clamp(200px, 30vh, 320px);
+  width: clamp(300px, 28vw, 460px);
   height: auto;
-  transform: rotate(5deg);
-  filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.35));
+  transform: rotate(4deg);
+  /* The art sits on a true-black backing; screen blending folds that
+     backing into the dark panel so only the character shows. */
+  mix-blend-mode: screen;
   pointer-events: none;
 }
 
@@ -1702,14 +1796,16 @@ a.hero-pill:hover {
   .contact-kick {
     display: none;
   }
+  .timeline-kick {
+    display: none;
+  }
 }
 
 .contact-bottom {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 32px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(28px, 5vh, 44px);
   margin: clamp(44px, 8vh, 80px) 0 clamp(48px, 9vh, 90px);
 }
 
@@ -2317,4 +2413,4 @@ a.hero-pill:hover .hero-accent {
   display: block;
   width: 100%;
   height: auto;
-}
+   }
