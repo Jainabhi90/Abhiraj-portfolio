@@ -68,7 +68,8 @@ test("responsive layout, cream hero, five works, journey, no excluded content", 
     expect(order[i]).toBeGreaterThan(order[i - 1]);
   // Hero meta: role pills + inline socials.
   await expect(page.locator(".hero-pill")).toHaveCount(2);
-  await expect(page.locator(".hero-socials a")).toHaveCount(3);
+  await expect(page.locator(".hero-meta .social-link")).toHaveCount(3);
+  await expect(page.locator(".contact .social-link")).toHaveCount(3);
   // Online presence cards with verified links.
   const cards = page.locator(".presence-card");
   await expect(cards).toHaveCount(4);
