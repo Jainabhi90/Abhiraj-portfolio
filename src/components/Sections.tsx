@@ -29,6 +29,10 @@ export function Hero() {
           </em>{" "}
           <ScrambleText text="to" /> <ScrambleText text="production." />
         </p>
+        <div className="hero-side mono">
+          <ScrambleText text="SOFTWARE ENGINEER" className="hero-role" />
+          <span className="hero-accent">CO-FOUNDER & CTO / NIOLEARN</span>
+        </div>
         <div className="hero-cta">
           <a href="#work" className="cta-pill">
             View selected work <span aria-hidden="true">↘</span>
@@ -44,7 +48,7 @@ export function Hero() {
         </div>
         <div className="hero-meta mono">
           <a
-            className="hero-pill"
+            className="hero-pill hero-pill-lead"
             href="https://niolearn.com/"
             target="_blank"
             rel="noopener noreferrer"
@@ -57,10 +61,6 @@ export function Hero() {
           </span>
           <SocialLinks items={["github", "linkedin", "email"]} />
         </div>
-      </div>
-      <div className="hero-side mono">
-        <ScrambleText text="SOFTWARE ENGINEER" className="hero-role" />
-        <span className="hero-accent">CO-FOUNDER & CTO / NIOLEARN</span>
       </div>
       <div className="hero-bottom mono">
         <a href={profile.github}>
