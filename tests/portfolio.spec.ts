@@ -46,17 +46,44 @@ test("responsive layout, cream hero, five works, journey, no excluded content", 
       ),
     ).toBeTruthy();
     await expect(page.locator(".work-row")).toHaveCount(5);
-    await expect(page.locator("body")).not.toContainText(/eduos/i);
+    // EduOS stays out of the project list; it only appears as a role.
+    await expect(page.locator(".work-rows")).not.toContainText(/eduos/i);
   }
   // The decorative hero rectangle is gone for good.
   await expect(page.locator(".hero-rect")).toHaveCount(0);
   await expect(page.locator(".hero canvas")).toHaveCount(0);
-  // Cream journey timeline, NioLearn first.
-  await expect(page.locator(".timeline-item")).toHaveCount(6);
+  // Cream journey timeline, NioLearn first, EduOS listed as a role.
+  await expect(page.locator(".timeline-item")).toHaveCount(8);
   await expect(page.locator(".timeline-card").first()).toContainText(
     /NioLearn/,
   );
   await expect(page.locator(".timeline")).toContainText(/8\.95/);
+  // Experience moved directly after Who Am I, before What I Do.
+  const order = await page.evaluate(() => {
+    const ids = ["about", "experience", "expertise", "work", "presence", "contact"];
+    return ids.map(
+      (id) => document.getElementById(id)!.getBoundingClientRect().top,
+    );
+  });
+  for (let i = 1; i < order.length; i++)
+    expect(order[i]).toBeGreaterThan(order[i - 1]);
+  // Hero meta: role pills + inline socials.
+  await expect(page.locator(".hero-pill")).toHaveCount(2);
+  await expect(page.locator(".hero-socials a")).toHaveCount(3);
+  // Online presence cards with verified links.
+  const cards = page.locator(".presence-card");
+  await expect(cards).toHaveCount(4);
+  await expect(cards.nth(0)).toHaveAttribute(
+    "href",
+    "https://github.com/Jainabhi90",
+  );
+  await expect(cards.nth(1)).toHaveAttribute("href", /linkedin/);
+  await expect(cards.nth(3)).toHaveAttribute(
+    "href",
+    "mailto:jainabhi90980@gmail.com",
+  );
+  // Expanded achievements include the Class 10 topper card.
+  await expect(page.locator(".achievements")).toContainText("97.6%");
   expect(errors).toEqual([]);
 });
 
@@ -268,33 +295,69 @@ test("Who Am I reveal changes color, never opacity", async ({ page }) => {
   }
 });
 
-test("What I Do pinned stack fits a 1366x768 viewport", async ({ page }) => {
+test("What I Do pinned stack keeps every card heading visible", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 1366, height: 768 });
   await page.goto("/");
   await skipIntro(page);
   await expect(page.locator(".stack-card")).toHaveCount(4);
-  const orbitTop = await page
-    .locator(".orbit-section")
-    .evaluate((e) => e.getBoundingClientRect().top + window.scrollY);
-  const pinHeight = await page
+  const pinStart = await page
     .locator(".whatido-pin")
-    .evaluate((e) => (e as HTMLElement).offsetHeight);
-  // The pin releases 1.7 viewport-heights after its start; the spacer then
-  // fills pinHeight more before the orbit. End state sits just inside it.
-  await jumpTo(page, orbitTop - pinHeight - 40);
+    .evaluate((e) => e.getBoundingClientRect().top + window.scrollY);
+  // Pin distance is 2.3 viewport-heights across 4 timeline units; the full
+  // stack settles at unit 3 (~0.73 of the distance), just before the tail
+  // shrink that hands over to the orbit.
+  await jumpTo(page, pinStart + Math.round(768 * 1.68));
   await page.waitForTimeout(400);
-  const last = await page
+  const heads = page.locator(".stack-card h3");
+  await expect(heads).toHaveCount(4);
+  for (let i = 0; i < 4; i++) {
+    const box = await heads
+      .nth(i)
+      .evaluate((e) => e.getBoundingClientRect().toJSON());
+    expect(box.top).toBeGreaterThanOrEqual(0);
+    expect(box.bottom).toBeLessThanOrEqual(768);
+    expect(box.height).toBeGreaterThan(12);
+  }
+  // Covered cards never fully cover: later cards sit lower than earlier ones.
+  const tops = await page
     .locator(".stack-card")
-    .last()
-    .evaluate((e) => e.getBoundingClientRect().toJSON());
-  expect(last.top).toBeGreaterThanOrEqual(0);
-  expect(last.bottom).toBeLessThanOrEqual(768);
-  // Stacking is transform-only: covered cards stay laid out via transforms.
-  const firstTransform = await page
+    .evaluateAll((els) => els.map((e) => e.getBoundingClientRect().top));
+  for (let i = 1; i < tops.length; i++)
+    expect(tops[i]).toBeGreaterThan(tops[i - 1] + 40);
+  // Stacking is transform-only: moved cards stay laid out via transforms.
+  const lastTransform = await page
     .locator(".stack-card")
-    .first()
+    .nth(2)
     .evaluate((e) => getComputedStyle(e).transform);
-  expect(firstTransform).toContain("matrix");
+  expect(lastTransform).toContain("matrix");
+});
+
+test("What I Do to orbit: stack shrinks into the shared viewport", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto("/");
+  await skipIntro(page);
+  const pinStart = await page
+    .locator(".whatido-pin")
+    .evaluate((e) => e.getBoundingClientRect().top + window.scrollY);
+  // Tail unit: the stack area scales down while the forest orbit panel
+  // rises over the bottom of the same viewport.
+  await jumpTo(page, pinStart + Math.round(768 * 2.18));
+  await page.waitForTimeout(600);
+  const scale = await page.locator(".stack-area").evaluate((e) => {
+    const m = getComputedStyle(e).transform.match(/matrix\(([^)]+)\)/);
+    return m ? Number(m[1].split(",")[0]) : 1;
+  });
+  expect(scale).toBeLessThan(0.85);
+  expect(scale).toBeGreaterThan(0.35);
+  const orbitBox = await page
+    .locator(".orbit-stage")
+    .evaluate((e) => e.getBoundingClientRect().toJSON());
+  expect(orbitBox.top).toBeLessThan(768);
+  expect(orbitBox.top).toBeGreaterThan(768 * 0.3);
 });
 
 test("orbit: shared-center wheel rotates with scroll and exits cleanly", async ({
@@ -331,7 +394,7 @@ test("orbit: shared-center wheel rotates with scroll and exits cleanly", async (
   expect(angle).toBeLessThan(-10);
   expect(angle).toBeGreaterThan(-45);
   // Clean exit: scrolling past the pin lands on Selected Works.
-  await jumpTo(page, orbitTop + Math.round(900 * 1.7) + 900);
+  await jumpTo(page, orbitTop + Math.round(900 * 2.1) + 900);
   await expect(page.locator("#work")).toBeInViewport();
 });
 
@@ -343,8 +406,8 @@ test("mobile fallbacks: static orbit list and unpinned cards", async ({
   await skipIntro(page);
   await expect(page.locator(".orbit-stage")).not.toHaveClass(/orbit-animated/);
   const words = page.locator(".orbit-word");
-  await expect(words).toHaveCount(3);
-  for (let i = 0; i < 3; i++) {
+  await expect(words).toHaveCount(4);
+  for (let i = 0; i < 4; i++) {
     await words.nth(i).scrollIntoViewIfNeeded();
     const box = await words.nth(i).evaluate((e) =>
       e.getBoundingClientRect().toJSON(),
@@ -395,4 +458,32 @@ test("technology logo: one 360 turn forward, smooth return to rest", async ({
   await expect
     .poll(() => logo.evaluate((e) => (e as HTMLElement).dataset.spinning))
     .toBe("1");
+});
+
+test("floating project preview positions on pointerenter after scroll", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await skipIntro(page);
+  // Park the cursor where the first work row will land, then scroll the row
+  // under the stationary cursor: pointerenter fires without pointermove.
+  await page.mouse.move(700, 300);
+  const row = page.locator(".work-row").first();
+  await row.scrollIntoViewIfNeeded();
+  await jumpTo(
+    page,
+    (await row.evaluate(
+      (e) => e.getBoundingClientRect().top + window.scrollY - 260,
+    )) as number,
+  );
+  await page.waitForTimeout(400);
+  const preview = page.locator(".floating-project");
+  await expect(preview).toHaveClass(/is-visible/);
+  const box = await preview.evaluate((e) =>
+    e.getBoundingClientRect().toJSON(),
+  );
+  expect(box.left).toBeGreaterThanOrEqual(0);
+  expect(box.right).toBeLessThanOrEqual(1440);
+  expect(box.top).toBeGreaterThanOrEqual(0);
 });
