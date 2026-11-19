@@ -305,10 +305,10 @@ test("What I Do pinned stack keeps every card heading visible", async ({
   const pinStart = await page
     .locator(".whatido-pin")
     .evaluate((e) => e.getBoundingClientRect().top + window.scrollY);
-  // Pin distance is 2.3 viewport-heights across 4 timeline units; the full
-  // stack settles at unit 3 (~0.73 of the distance), just before the tail
-  // shrink that hands over to the orbit.
-  await jumpTo(page, pinStart + Math.round(768 * 1.68));
+  // Pin distance is 1.8 viewport-heights across 3 timeline units; the
+  // full stack has nearly settled by this point, just before the orbit
+  // rise starts dissolving it.
+  await jumpTo(page, pinStart + Math.round(768 * 1.8) - 4);
   await page.waitForTimeout(400);
   const heads = page.locator(".stack-card h3");
   await expect(heads).toHaveCount(4);
@@ -343,16 +343,16 @@ test("What I Do to orbit: stack shrinks into the shared viewport", async ({
   const pinStart = await page
     .locator(".whatido-pin")
     .evaluate((e) => e.getBoundingClientRect().top + window.scrollY);
-  // Tail unit: the stack area scales down while the forest orbit panel
-  // rises over the bottom of the same viewport.
-  await jumpTo(page, pinStart + Math.round(768 * 2.18));
+  // Tail: the stack dissolves (scrubbed by the orbit rise) while the
+  // forest orbit panel climbs over the bottom of the same viewport.
+  await jumpTo(page, pinStart + Math.round(768 * 2.03));
   await page.waitForTimeout(600);
   const scale = await page.locator(".stack-area").evaluate((e) => {
     const m = getComputedStyle(e).transform.match(/matrix\(([^)]+)\)/);
     return m ? Number(m[1].split(",")[0]) : 1;
   });
   expect(scale).toBeLessThan(0.85);
-  expect(scale).toBeGreaterThan(0.35);
+  expect(scale).toBeGreaterThan(0.6);
   const orbitBox = await page
     .locator(".orbit-stage")
     .evaluate((e) => e.getBoundingClientRect().toJSON());
@@ -370,13 +370,15 @@ test("orbit: shared-center wheel rotates with scroll and exits cleanly", async (
   const orbitTop = await page
     .locator(".orbit-section")
     .evaluate((e) => e.getBoundingClientRect().top + window.scrollY);
-  // Viewport-derived radius is set once the wheel animates.
+  // Viewport-derived radius is set once the wheel animates: compact
+  // semicircle (roughly half the viewport width), not a giant arc.
   const radius = await wheel.evaluate((e) =>
     (e as HTMLElement).style.getPropertyValue("--orbit-r"),
   );
-  expect(Number.parseInt(radius)).toBeGreaterThan(900);
-  // Mid-pin: the wheel itself has rotated (parent rotation, tangent words).
-  await jumpTo(page, orbitTop + Math.round(900 * 0.8));
+  expect(Number.parseInt(radius)).toBeGreaterThan(600);
+  expect(Number.parseInt(radius)).toBeLessThan(1200);
+  // Mid-pin: the sweep is rotating the wheel toward its rest state.
+  await jumpTo(page, orbitTop + Math.round(900 * 0.5));
   await page.waitForTimeout(400);
   const midTransform = await wheel.evaluate(
     (e) => getComputedStyle(e).transform,
@@ -391,10 +393,25 @@ test("orbit: shared-center wheel rotates with scroll and exits cleanly", async (
     ) *
       180) /
     Math.PI;
-  expect(angle).toBeLessThan(-10);
-  expect(angle).toBeGreaterThan(-45);
+  expect(angle).toBeGreaterThan(10);
+  expect(angle).toBeLessThan(45);
+  // Completed state: all four words fully legible inside the viewport.
+  await jumpTo(page, orbitTop + Math.round(900 * 1.3) - 80);
+  await page.waitForTimeout(500);
+  const words = page.locator(".orbit-word");
+  await expect(words).toHaveCount(4);
+  for (let i = 0; i < 4; i++) {
+    const box = await words
+      .nth(i)
+      .evaluate((e) => e.getBoundingClientRect().toJSON());
+    expect(box.left).toBeGreaterThanOrEqual(0);
+    expect(box.right).toBeLessThanOrEqual(1440);
+    expect(box.top).toBeGreaterThanOrEqual(0);
+    expect(box.bottom).toBeLessThanOrEqual(900);
+    expect(box.width).toBeGreaterThan(60);
+  }
   // Clean exit: scrolling past the pin lands on Selected Works.
-  await jumpTo(page, orbitTop + Math.round(900 * 2.1) + 900);
+  await jumpTo(page, orbitTop + Math.round(900 * 1.3) + 900);
   await expect(page.locator("#work")).toBeInViewport();
 });
 
