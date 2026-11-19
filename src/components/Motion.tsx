@@ -600,7 +600,7 @@ export function Journey() {
           <p>
             LeetCode problems solved
             <br />
-            with Java and Python
+            with Java
           </p>
         </div>
         <div>
@@ -626,7 +626,10 @@ export function Journey() {
           </p>
         </div>
       </div>
-      <p className="workshop mono">ALSO / COMPLETED THE BE10X AI TOOLS WORKSHOP</p>
+      <p className="workshop mono">
+        ALSO / STATE-LEVEL BADMINTON PLAYER · COMPLETED THE BE10X AI TOOLS
+        WORKSHOP
+      </p>
     </section>
   );
 }
