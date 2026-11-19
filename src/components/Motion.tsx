@@ -281,7 +281,7 @@ export function WhatIDo() {
             trigger: pinEl,
             pin: true,
             start: "top top",
-            end: () => "+=" + Math.round(window.innerHeight * 1.8),
+            end: () => "+=" + Math.round(window.innerHeight * 2),
             scrub: 0.5,
             anticipatePin: 1,
             invalidateOnRefresh: true,
@@ -297,6 +297,10 @@ export function WhatIDo() {
             at,
           );
         }
+        /* Dwell: an empty tail extends the timeline so the last card
+           finishes well before the pin releases, leaving the full stack
+           at rest (all four cards readable) before the handoff begins. */
+        tl.to({}, { duration: 0.5 });
         /* Tail: the whole stack dissolves while the forest orbit panel
            rises into the same viewport over it. Driven by the orbit
            section's own rise (start: its top reaches the viewport
