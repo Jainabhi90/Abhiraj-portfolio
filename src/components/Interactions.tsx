@@ -59,6 +59,25 @@ export function MotionSystem() {
    and guards React Strict Mode's development double-mount. */
 let introDoneInThisDocument = false;
 
+/* The greeting plays on the first open of the site in a browser
+   session. Reloads in the same tab (normal or hard: page JS cannot
+   distinguish the two) skip it, per the user's direction. */
+const INTRO_KEY = "aj-intro-seen";
+function introSeenThisSession() {
+  try {
+    return sessionStorage.getItem(INTRO_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+function markIntroSeen() {
+  try {
+    sessionStorage.setItem(INTRO_KEY, "1");
+  } catch {
+    /* storage unavailable: fall back to per-document behavior */
+  }
+}
+
 export function Preloader() {
   const [active, setActive] = useState(false);
   const [word, setWord] = useState(0);
@@ -75,6 +94,7 @@ export function Preloader() {
   useEffect(() => {
     if (
       introDoneInThisDocument ||
+      introSeenThisSession() ||
       matchMedia("(prefers-reduced-motion: reduce)").matches
     )
       return;
@@ -94,6 +114,7 @@ export function Preloader() {
       setTimeout(() => {
         document.documentElement.classList.add("intro-complete");
         introDoneInThisDocument = true;
+        markIntroSeen();
       }, 3800),
     );
     timers.push(setTimeout(() => setActive(false), 4500));
@@ -122,6 +143,7 @@ export function Preloader() {
     setActive(false);
     document.documentElement.classList.add("intro-complete");
     introDoneInThisDocument = true;
+    markIntroSeen();
   }
   return (
     <div
