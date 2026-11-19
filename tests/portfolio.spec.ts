@@ -46,14 +46,13 @@ test("responsive layout, cream hero, five works, journey, no excluded content", 
       ),
     ).toBeTruthy();
     await expect(page.locator(".work-row")).toHaveCount(5);
-    // EduOS stays out of the project list; it only appears as a role.
-    await expect(page.locator(".work-rows")).not.toContainText(/eduos/i);
   }
   // The decorative hero rectangle is gone for good.
   await expect(page.locator(".hero-rect")).toHaveCount(0);
   await expect(page.locator(".hero canvas")).toHaveCount(0);
-  // Cream journey timeline, NioLearn first, EduOS listed as a role.
-  await expect(page.locator(".timeline-item")).toHaveCount(8);
+  // Cream journey timeline, NioLearn first; EduOS stays excluded.
+  await expect(page.locator(".timeline-item")).toHaveCount(7);
+  await expect(page.locator("body")).not.toContainText(/eduos/i);
   await expect(page.locator(".timeline-card").first()).toContainText(
     /NioLearn/,
   );
