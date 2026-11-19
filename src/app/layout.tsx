@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar';
 import {MotionSystem,Preloader,Cursor} from '@/components/Interactions';
 import {profile} from '@/content/portfolio';
 import './globals.css';
+import './presence-hover.css';
 const display=localFont({src:[{path:'../../public/fonts/display.woff2',weight:'500'},{path:'../../public/fonts/display-bold.woff2',weight:'600'}],variable:'--font-display',display:'swap'});
 const editorial=localFont({src:'../../public/fonts/editorial.woff2',variable:'--font-editorial',display:'swap',preload:false});
 const mono=localFont({src:'../../public/fonts/mono.woff2',variable:'--font-mono',display:'swap',preload:false});
