@@ -1,0 +1,2 @@
+import type {MetadataRoute} from 'next';
+export default function manifest():MetadataRoute.Manifest{return {name:'Abhiraj Jain | Software Engineer & Co-Founder',short_name:'Abhiraj Jain',description:'Portfolio of Abhiraj Jain, a software engineer and co-founder of NioLearn.',start_url:'/',display:'standalone',background_color:'#F4F3EE',theme_color:'#F4F3EE',icons:[{src:'/icon.svg',sizes:'any',type:'image/svg+xml'}]}}
